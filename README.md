@@ -37,12 +37,13 @@ You will also need some basic scientific computing libraries (numpy, scikit-fuzz
 with smallest output meaning left and largest meaning right
 
 CONSIDER THE FOLLOWING TREE STRUCTURE:
+```
                         if so, get away
 determine if in danger
                         if not, shoot an easy asteroid
 
             in parallel, determine whether or not to shoot
-
+```
             
 2. Create testing function to evaluate performance of a controller
    - five runs, average the score (number of killed asteroids)
