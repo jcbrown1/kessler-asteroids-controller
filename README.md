@@ -16,14 +16,20 @@ You will also need some basic scientific computing libraries (numpy, scikit-fuzz
 1. Implement a fuzzy-tree
    - Determine rules
    - What info are we going to input into the tree?
-        - ship position
+        - ship distance from center
         - closest asteroid RELATIVE position
+             - polar coordinates
         - closest asteroid velocity
+             - polar coordinates
         - bullet velocity?
         - closest asteroid in front relative position
+             - distance (no angle)
         - closest asteroid behind relative position
+             - distance (no angle)
         - closest asteroid to the left relative position
+             - distance (no angle)
         - closest asteroid to the right relative positon
+             - distance (no angle)
       
 2. Create testing function to evaluate performance of a controller
    - five runs, average the score (number of killed asteroids)
