@@ -286,6 +286,7 @@ class FuzzyController(KesslerController):
         closest_asteroid = self.get_closest_asteroid(ship_state, game_state)
 
         my_angle = ship_state['heading']
+        
         relative_position = np.array(closest_asteroid['position']) - np.array(ship_state['position'])
         set_point_angle = np.arctan2(relative_position[1], relative_position[0])
         set_point_angle = np.rad2deg(set_point_angle)
