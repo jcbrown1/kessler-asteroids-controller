@@ -12,7 +12,7 @@ import numpy as np
 from scipy.optimize import fsolve
 
 
-class TestController(KesslerController):
+class BasicController(KesslerController):
     def __init__(self):
         """
         Any variables or initialization desired for the controller can be set up here
