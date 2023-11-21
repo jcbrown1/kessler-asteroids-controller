@@ -16,7 +16,7 @@ You will also need some basic scientific computing libraries (numpy, scikit-fuzz
 1. Implement a fuzzy-tree
    - Determine rules
    - What info are we going to input into the tree?
-        - ship distance from center
+        - ship distance from center? (Probably a bad call)
         - closest asteroid RELATIVE position
              - polar coordinates
         - closest asteroid velocity
