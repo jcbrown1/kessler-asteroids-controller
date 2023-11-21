@@ -14,6 +14,7 @@ You will also need some basic scientific computing libraries (numpy, scikit-fuzz
 # TODO
 
 1. Implement a fuzzy-tree
+   - Determine rules
 2. Create testing function to evaluate performance of a controller
-   - 5 runs, average the score (number of killed asteroids)
+   - five runs, average the score (number of killed asteroids)
 3. Re-do parts of fuzzy tree to be genetic so we can train this bitch 
