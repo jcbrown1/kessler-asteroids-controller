@@ -1,3 +1,6 @@
+# DESIGN DOCUMENT
+https://docs.google.com/document/d/1dESp02CtQHdKuoQ7bPWhjdPxBb_Zvr5CH5_EGJl696M/edit?usp=sharing
+
 # kessler-asteroids-controller
 Genetic algorithm optimized fuzzy tree to play the kessler-game implemented by Thales Group
 
