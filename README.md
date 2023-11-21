@@ -38,9 +38,9 @@ with smallest output meaning left and largest meaning right
 
 CONSIDER THE FOLLOWING TREE STRUCTURE:
 ```
-                        if so, get away
-determine if in danger
-                        if not, shoot an easy asteroid
+                        /->  if so, get away
+determine if in danger |
+                        \- > if not, shoot an easy asteroid
 
             in parallel, determine whether or not to shoot
 ```
