@@ -198,13 +198,13 @@ class FuzzyController(KesslerController):
         linear_thrust = linear_sim.output['linear_thrust']
         angular_thrust = angular_sim.output['angular_thrust']
 
-        print(f'angle error {self.target_angle_error}')
+        # print(f'angle error {self.target_angle_error}')
 
         scale1 = 250
         scale2 = 1000
         scale3 = 100
 
-        print(f"commands: {(linear_thrust, angular_thrust, fire_command)}")
+        # print(f"commands: {(linear_thrust, angular_thrust, fire_command)}")
 
         return scale1 * linear_thrust, scale2 * angular_thrust, scale3 * fire_command
     
@@ -286,7 +286,7 @@ class FuzzyController(KesslerController):
         closest_asteroid = self.get_closest_asteroid(ship_state, game_state)
 
         my_angle = ship_state['heading']
-        
+
         relative_position = np.array(closest_asteroid['position']) - np.array(ship_state['position'])
         set_point_angle = np.arctan2(relative_position[1], relative_position[0])
         set_point_angle = np.rad2deg(set_point_angle)
