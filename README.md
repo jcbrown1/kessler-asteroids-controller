@@ -17,6 +17,8 @@ You will also need some basic scientific computing libraries (numpy, scikit-fuzz
    - Determine rules
    - What info are we going to input into the tree?
         - ship distance from center? (Probably a bad call)
+        - ship heading? (maybe just use the error of your heading and the target distance...)
+        - diff between heading and target relative angle
         - closest asteroid RELATIVE position
              - polar coordinates
         - closest asteroid velocity
@@ -33,7 +35,15 @@ You will also need some basic scientific computing libraries (numpy, scikit-fuzz
    - Consider remapping coordinates of dangerous asteroids to account for edge of screen position jump
    - angular_thrust output rules and membership shoould be symmetric,
 with smallest output meaning left and largest meaning right
-      
+
+CONSIDER THE FOLLOWING TREE STRUCTURE:
+                        if so, get away
+determine if in danger
+                        if not, shoot an easy asteroid
+
+            in parallel, determine whether or not to shoot
+
+            
 2. Create testing function to evaluate performance of a controller
    - five runs, average the score (number of killed asteroids)
 3. Re-do parts of fuzzy tree to be genetic so we can train this bitch 
