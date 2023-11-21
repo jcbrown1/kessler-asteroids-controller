@@ -30,6 +30,7 @@ You will also need some basic scientific computing libraries (numpy, scikit-fuzz
              - distance (no angle)
         - closest asteroid to the right relative positon
              - distance (no angle)
+   - Consider remapping coordinates of dangerous asteroids to account for edge of screen position jump
       
 2. Create testing function to evaluate performance of a controller
    - five runs, average the score (number of killed asteroids)
