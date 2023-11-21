@@ -31,6 +31,8 @@ You will also need some basic scientific computing libraries (numpy, scikit-fuzz
         - closest asteroid to the right relative positon
              - distance (no angle)
    - Consider remapping coordinates of dangerous asteroids to account for edge of screen position jump
+   - angular_thrust output rules and membership shoould be symmetric,
+with smallest output meaning left and largest meaning right
       
 2. Create testing function to evaluate performance of a controller
    - five runs, average the score (number of killed asteroids)
