@@ -21,6 +21,7 @@ def create_fuzzy_system() -> tuple:
     closest_danger_back = ctrl.Antecedent(np.linspace(0, 1, 100), 'closest_danger_back')
     closest_danger_left = ctrl.Antecedent(np.linspace(0, 1, 100), 'closest_danger_left')
     closest_danger_right = ctrl.Antecedent(np.linspace(0, 1, 100), 'closest_danger_right')
+    distance_net_front = ctrl.Antecedent(np.linspace(-1, 1, 100), 'distance_net_front')
 
     # Both Antecedent AND Consequent
     in_danger_A = ctrl.Antecedent(np.linspace(0, 1, 100), 'in_danger_A')
@@ -48,7 +49,11 @@ def create_fuzzy_system() -> tuple:
     closest_danger_right['close'] = fuzz.trimf(closest_danger_right.universe, (0, 0, 1))
     closest_danger_right['far'] = fuzz.trimf(closest_danger_right.universe, (0, 1, 1))
 
-    in_danger_A['no'] = fuzz.trimf(in_danger_A.universe, (0, 0, 1))
+    distance_net_front['front_distance'] = fuzz.trimf(distance_net_front.universe, (0, 1, 1))
+    distance_net_front['equal'] = fuzz.trimf(distance_net_front.universe, (-1, 0, 1))
+    distance_net_front['back_distance'] = fuzz.trimf(distance_net_front.universe, (-1, -1, 0))
+
+    in_danger_A['no'] = fuzz.trimf(in_danger_A.universe, (0, 0, 0.5))
     in_danger_A['yes'] = fuzz.trimf(in_danger_A.universe, (0, 1, 1))
 
     in_danger_C['no'] = fuzz.trimf(in_danger_C.universe, (0, 0, 1))
@@ -66,11 +71,14 @@ def create_fuzzy_system() -> tuple:
     fire_command['yes'] = fuzz.trimf(fire_command.universe, (0, 1, 1))
 
     # Rules
-    linear1 = ctrl.Rule(in_danger_A['yes'] & closest_danger_front['close'], linear_thrust['reverse'])
-    linear2 = ctrl.Rule(in_danger_A['yes'] & closest_danger_back['close'], linear_thrust['forward'])
+    # linear1 = ctrl.Rule(in_danger_A['yes'] & closest_danger_front['close'], linear_thrust['reverse'])
+    # linear2 = ctrl.Rule(in_danger_A['yes'] & closest_danger_back['close'], linear_thrust['forward'])
+    linear4 = ctrl.Rule(in_danger_A['yes'] & distance_net_front['front_distance'], linear_thrust['forward'])
+    linear5 = ctrl.Rule(in_danger_A['yes'] & distance_net_front['equal'], linear_thrust['stop'])
+    linear6 = ctrl.Rule(in_danger_A['yes'] & distance_net_front['back_distance'], linear_thrust['reverse'])
     linear3 = ctrl.Rule(in_danger_A['no'], linear_thrust['stop'])
 
-    linear_rules = [linear1, linear2, linear3]
+    linear_rules = [linear4, linear5, linear6, linear3]
 
     angular1 = ctrl.Rule(target_angle_error['left'] & in_danger_A['no'], angular_thrust['left'])
     angular2 = ctrl.Rule(target_angle_error['right'] & in_danger_A['no'], angular_thrust['right'])
@@ -151,12 +159,16 @@ class FuzzyController(KesslerController):
         linear_sim = self.linear_sim
         angular_sim = self.angular_sim
 
-        danger_sim.input['closest_danger_front'] = self.closest_danger_front
-        danger_sim.input['closest_danger_back'] = self.closest_danger_back
-        danger_sim.input['closest_danger_left'] = self.closest_danger_left
-        danger_sim.input['closest_danger_right'] = self.closest_danger_right
+        close_max = 1000
+        angle_max = 180
+        net_close_max = 100
+
+        danger_sim.input['closest_danger_front'] = np.clip(self.closest_danger_front, 0, close_max)/close_max
+        danger_sim.input['closest_danger_back'] = np.clip(self.closest_danger_back, 0, close_max)/close_max
+        danger_sim.input['closest_danger_left'] = np.clip(self.closest_danger_left, 0, close_max)/close_max
+        danger_sim.input['closest_danger_right'] = np.clip(self.closest_danger_right, 0, close_max)/close_max
         
-        fire_sim.input['target_angle_error'] = self.targete_angle_error
+        fire_sim.input['target_angle_error'] = np.clip(self.target_angle_error, 0, angle_max)/angle_max
 
         danger_sim.compute()
         fire_sim.compute()
@@ -165,13 +177,20 @@ class FuzzyController(KesslerController):
         fire_command = fire_sim.output['fire_command']
 
         linear_sim.input['in_danger_A'] = in_danger
-        linear_sim.input['closest_danger_front'] = self.closest_danger_front  # TODO this should actually be front relative to your heading, but it isn't
-        linear_sim.input['closest_danger_back'] = self.closest_danger_back  # TODO Same as above
+        linear_sim.input['distance_net_front'] = np.clip(self.distance_net_front, -net_close_max, net_close_max)/net_close_max
+        # linear_sim.input['closest_danger_front'] = np.clip(self.closest_danger_front, 0, close_max)/close_max
+        # linear_sim.input['closest_danger_back'] = np.clip(self.closest_danger_back, 0, close_max)/close_max
+
+        # print(f'front is {self.closest_danger_front}')
+        # print(f'back is {self.closest_danger_back}')
+        # print(f'in_danger is {in_danger}')
+        # print(f'net_front is {self.distance_net_front}')
+        # print(f'dumb {np.clip(self.distance_net_front, -net_close_max, net_close_max)/net_close_max}')
 
         angular_sim.input['in_danger_A'] = in_danger
-        angular_sim.input['target_angle_error'] = self.targete_angle_error
-        angular_sim.input['closest_danger_left'] = self.closest_danger_left
-        angular_sim.input['closest_danger_right'] = self.closest_danger_right
+        angular_sim.input['target_angle_error'] = np.clip(self.target_angle_error, -angle_max, angle_max)/angle_max
+        angular_sim.input['closest_danger_left'] = np.clip(self.closest_danger_left, 0, close_max)/close_max
+        angular_sim.input['closest_danger_right'] = np.clip(self.closest_danger_right, 0, close_max)/close_max
 
         linear_sim.compute()
         angular_sim.compute()
@@ -179,9 +198,13 @@ class FuzzyController(KesslerController):
         linear_thrust = linear_sim.output['linear_thrust']
         angular_thrust = angular_sim.output['angular_thrust']
 
-        scale1 = 30
-        scale2 = 30
-        scale3 = 30
+        print(f'angle error {self.target_angle_error}')
+
+        scale1 = 250
+        scale2 = 1000
+        scale3 = 100
+
+        print(f"commands: {(linear_thrust, angular_thrust, fire_command)}")
 
         return scale1 * linear_thrust, scale2 * angular_thrust, scale3 * fire_command
     
@@ -209,6 +232,8 @@ class FuzzyController(KesslerController):
         (distance from ship, angle from positive x-axis in degrees)
         '''
 
+        map_size = game_state['map_size']
+
         ship_heading = ship_state['heading']
         ship_angle = 90 - ship_heading
 
@@ -216,6 +241,11 @@ class FuzzyController(KesslerController):
 
         for asteroid_state in game_state['asteroids']:
             d_vec = np.array(ship_state['position']) - np.array(asteroid_state['position'])
+            if d_vec[0] > map_size[0]/2:
+                d_vec[0] = map_size[0] - d_vec[0]
+            if d_vec[1] > map_size[1]/2:
+                d_vec[1] = map_size[1] - d_vec[1]
+
             d_norm = np.linalg.norm(d_vec)
             d_angle = np.arctan2(d_vec[1], d_vec[0])
             d_angle = np.rad2deg(d_angle)
@@ -250,6 +280,7 @@ class FuzzyController(KesslerController):
         self.update_closest_danger_back(ship_state, game_state)
         self.update_closest_danger_left(ship_state, game_state)
         self.update_closest_danger_right(ship_state, game_state)
+        self.update_distance_net_front(ship_state, game_state)
 
     def update_target_angle_error(self, ship_state: Dict, game_state: Dict) -> None:
         closest_asteroid = self.get_closest_asteroid(ship_state, game_state)
@@ -257,12 +288,13 @@ class FuzzyController(KesslerController):
         my_angle = ship_state['heading']
         relative_position = np.array(closest_asteroid['position']) - np.array(ship_state['position'])
         set_point_angle = np.arctan2(relative_position[1], relative_position[0])
+        set_point_angle = np.rad2deg(set_point_angle)
 
         error = (my_angle - set_point_angle) % 360
         if error > 180:
             error -= 360
 
-        self.targete_angle_error = error
+        self.target_angle_error = -error
 
     # def update_closest_target_distance(self, ship_state: Dict, game_state: Dict) -> None:
     #     # TODO
@@ -324,6 +356,10 @@ class FuzzyController(KesslerController):
                 closest = distance
         
         self.closest_danger_right = closest
+
+    def update_distance_net_front(self, ship_state: Dict, game_state: Dict) -> None:
+        self.distance_net_front = self.closest_danger_front - self.closest_danger_back
+
 
     @property
     def name(self) -> str:
