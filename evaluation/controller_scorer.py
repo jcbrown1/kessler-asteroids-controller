@@ -2,6 +2,7 @@ import kesslergame
 from kesslergame.scenario import Scenario
 from kesslergame.controller import KesslerController
 from controllers.fuzzy_tree_controller import FuzzyController
+from controllers.fuzzy_discrete_danger import DangerFuzzy
 
 import numpy as np
 
@@ -26,7 +27,7 @@ def evaluate_controller(controller: KesslerController) -> float:
     return true_score
 
 def main():
-    score = evaluate_controller(FuzzyController())
+    score = evaluate_controller(DangerFuzzy())
     print(score)
     
 
