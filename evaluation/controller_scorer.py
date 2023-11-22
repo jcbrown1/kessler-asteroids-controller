@@ -1,13 +1,12 @@
 import kesslergame
+from kesslergame.kessler_game import TrainerEnvironment
 from kesslergame.scenario import Scenario
 from kesslergame.controller import KesslerController
-from controllers.fuzzy_tree_controller import FuzzyController
-from controllers.fuzzy_discrete_danger import DangerFuzzy
-
+from controllers.simple_fuzzy import genetic_controller
 import numpy as np
 
-game = kesslergame.kessler_game.KesslerGame()
-scenario = Scenario(name='test', num_asteroids=20)
+game = TrainerEnvironment()
+scenario = Scenario(name='test', num_asteroids=15)
 
 def evaluate_controller(controller: KesslerController) -> float:
     results = []
@@ -26,10 +25,15 @@ def evaluate_controller(controller: KesslerController) -> float:
 
     return true_score
 
+def evaluate_chromosome(chromosome):
+    controller = genetic_controller(chromosome)
+    score = evaluate_controller(controller)
+    return score
+
 def main():
-    score = evaluate_controller(DangerFuzzy())
+    from controllers.simple_fuzzy import SimpleFuzzy
+    score = evaluate_controller(SimpleFuzzy())
     print(score)
-    
 
 if __name__ == '__main__':
     main()
