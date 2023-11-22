@@ -34,7 +34,11 @@ def create_fuzzy_system() -> Sims:
     # Antecedents
     target_angle_error = ctrl.Antecedent(np.linspace(-1, 1, 100), 'target_angle_error')
     closest_danger_front = ctrl.Antecedent(np.linspace(0, 1, 100), 'closest_danger_front')
+    closest_danger_front_left = ctrl.Antecedent(np.linspace(0, 1, 100), 'closest_danger_front_left')
+    closest_danger_front_right = ctrl.Antecedent(np.linspace(0, 1, 100), 'closest_danger_front_right')
     closest_danger_back = ctrl.Antecedent(np.linspace(0, 1, 100), 'closest_danger_back')
+    closest_danger_back_left = ctrl.Antecedent(np.linspace(0, 1, 100), 'closest_danger_back_left')
+    closest_danger_back_right = ctrl.Antecedent(np.linspace(0, 1, 100), 'closest_danger_back_right')
     closest_danger_left = ctrl.Antecedent(np.linspace(0, 1, 100), 'closest_danger_left')
     closest_danger_right = ctrl.Antecedent(np.linspace(0, 1, 100), 'closest_danger_right')
     distance_net_front = ctrl.Antecedent(np.linspace(-1, 1, 100), 'distance_net_front')
@@ -58,9 +62,25 @@ def create_fuzzy_system() -> Sims:
     closest_danger_front['mid'] = fuzz.trimf(closest_danger_front.universe, (0, 0.5, 1))
     closest_danger_front['far'] = fuzz.trimf(closest_danger_front.universe, (0.5, 1, 1))
 
+    closest_danger_front_left['close'] = fuzz.trimf(closest_danger_front_left.universe, (0, 0, 0.5))
+    closest_danger_front_left['mid'] = fuzz.trimf(closest_danger_front_left.universe, (0, 0.5, 1))
+    closest_danger_front_left['far'] = fuzz.trimf(closest_danger_front_left.universe, (0.5, 1, 1))
+
+    closest_danger_front_right['close'] = fuzz.trimf(closest_danger_front_right.universe, (0, 0, 0.5))
+    closest_danger_front_right['mid'] = fuzz.trimf(closest_danger_front_right.universe, (0, 0.5, 1))
+    closest_danger_front_right['far'] = fuzz.trimf(closest_danger_front_right.universe, (0.5, 1, 1))
+
     closest_danger_back['close'] = fuzz.trimf(closest_danger_back.universe, (0, 0, 0.5))
     closest_danger_back['mid'] = fuzz.trimf(closest_danger_back.universe, (0, 0.5, 1))
     closest_danger_back['far'] = fuzz.trimf(closest_danger_back.universe, (0.5, 1, 1))
+
+    closest_danger_back_left['close'] = fuzz.trimf(closest_danger_back_left.universe, (0, 0, 0.5))
+    closest_danger_back_left['mid'] = fuzz.trimf(closest_danger_back_left.universe, (0, 0.5, 1))
+    closest_danger_back_left['far'] = fuzz.trimf(closest_danger_back_left.universe, (0.5, 1, 1))
+
+    closest_danger_back_right['close'] = fuzz.trimf(closest_danger_back_right.universe, (0, 0, 0.5))
+    closest_danger_back_right['mid'] = fuzz.trimf(closest_danger_back_right.universe, (0, 0.5, 1))
+    closest_danger_back_right['far'] = fuzz.trimf(closest_danger_back_right.universe, (0.5, 1, 1))
 
     closest_danger_left['close'] = fuzz.trimf(closest_danger_left.universe, (0, 0, 0.5))
     closest_danger_left['mid'] = fuzz.trimf(closest_danger_left.universe, (0, 0.5, 1))
@@ -130,6 +150,8 @@ def create_fuzzy_system() -> Sims:
     escape_angular_rules.append(ctrl.Rule(distance_net_right['equal'], angular_thrust['stop']))
     escape_angular_rules.append(ctrl.Rule(distance_net_right['little_space_right'], angular_thrust['slow_right']))
     escape_angular_rules.append(ctrl.Rule(distance_net_right['lots_space_right'], angular_thrust['fast_right']))
+    escape_angular_rules.append(ctrl.Rule(closest_danger_front_left['close'], angular_thrust['slow_right']))
+    escape_angular_rules.append(ctrl.Rule(closest_danger_front_right['close'], angular_thrust['slow_left']))
     
     # Attack Rules
     # attack_linear1 = ctrl.Rule()
@@ -216,6 +238,7 @@ class DangerFuzzy(KesslerController):
         self.update_derived_features(ship_state, game_state)
 
         command = self.get_command()
+        # command = (0, 0, 0)
 
         return command
 
@@ -232,18 +255,10 @@ class DangerFuzzy(KesslerController):
         net_close_max = 200
         max_speed = 100
 
-        num = np.clip(self.closest_danger_front, 0, close_max)/close_max
-        print(f'danger front {num}')
-        danger_sim.input['closest_danger_front'] = num
-        num = np.clip(self.closest_danger_back, 0, close_max)/close_max
-        print(f'danger back {num}')
-        danger_sim.input['closest_danger_back'] = num
-        num = np.clip(self.closest_danger_left, 0, close_max)/close_max
-        print(f'danger left {num}')
-        danger_sim.input['closest_danger_left'] = num
-        num = np.clip(self.closest_danger_right, 0, close_max)/close_max
-        print(f'danger right {num}')
-        danger_sim.input['closest_danger_right'] = num
+        danger_sim.input['closest_danger_front'] = normalize(self.closest_danger_front, close_max)
+        danger_sim.input['closest_danger_back'] = normalize(self.closest_danger_back, close_max)
+        danger_sim.input['closest_danger_left'] = normalize(self.closest_danger_front_left, close_max)
+        danger_sim.input['closest_danger_right'] = normalize(self.closest_danger_right, close_max)
         
         fire_sim.input['target_angle_error'] = np.clip(self.target_angle_error, 0, angle_max)/angle_max
 
@@ -256,17 +271,11 @@ class DangerFuzzy(KesslerController):
         danger = 1
 
         if self.in_danger(danger):
-
-            num = np.clip(self.ship_speed, -max_speed, max_speed)/max_speed
-            print(f'speed is num {num}')
-            escape_linear_sim.input['ship_speed'] = num
-            num = np.clip(self.distance_net_front, -net_close_max, net_close_max)/net_close_max
-            print(f'diff front close {num}')
-            escape_linear_sim.input['distance_net_front'] = num
-            
-            num = np.clip(self.distance_net_right, -net_close_max, net_close_max)/net_close_max
-            print(f'diff right close {num}')
-            escape_angular_sim.input['distance_net_right'] = num
+            escape_linear_sim.input['ship_speed'] = normalize(self.ship_speed, max_speed, symmetric=True)
+            escape_linear_sim.input['distance_net_front'] = normalize(self.distance_net_front, net_close_max)
+            escape_angular_sim.input['distance_net_right'] = normalize(self.distance_net_right, net_close_max)
+            escape_angular_sim.input['closest_danger_front_left'] = normalize(self.closest_danger_front_left, close_max)
+            escape_angular_sim.input['closest_danger_front_right'] = normalize(self.closest_danger_front_right, close_max)
 
             escape_linear_sim.compute()
             escape_angular_sim.compute()
@@ -274,7 +283,7 @@ class DangerFuzzy(KesslerController):
             linear_thrust = escape_linear_sim.output['linear_thrust']
             angular_thrust = escape_angular_sim.output['angular_thrust']
         else:
-            attack_angular_sim.input['target_angle_error'] = np.clip(self.target_angle_error, -angle_max, angle_max)/angle_max
+            attack_angular_sim.input['target_angle_error'] = normalize(self.target_angle_error, angle_max, symmetric=True)
 
             attack_angular_sim.compute()
             
@@ -362,9 +371,12 @@ class DangerFuzzy(KesslerController):
         # self.update_closest_target_velocity()
         # self.update_closest_target_trajectory()
         self.update_closest_danger_front(ship_state, game_state)
+        self.update_closest_danger_front_left(ship_state, game_state)
+        self.update_closest_danger_front_right(ship_state, game_state)
         self.update_closest_danger_back(ship_state, game_state)
         self.update_closest_danger_left(ship_state, game_state)
         self.update_closest_danger_right(ship_state, game_state)
+        
         self.update_distance_net_front(ship_state, game_state)
         self.update_distance_net_right(ship_state, game_state)
         self.update_ship_velocity(ship_state, game_state)
@@ -406,10 +418,38 @@ class DangerFuzzy(KesslerController):
         closest = -1
 
         for distance, angle in asteroid_distance_angles:
-            if (angle <= 115 and angle >= 45) and (distance < closest or closest == -1):
+            if (angle <= 90+15 and angle >= 90-15) and (distance < closest or closest == -1):
                 closest = distance
         
+        closest -= ship_state['radius']
+
         self.closest_danger_front = closest
+
+    def update_closest_danger_front_left(self, ship_state: Dict, game_state: Dict) -> None:
+        asteroid_distance_angles = self.get_asteroid_distance_angles(ship_state, game_state)
+        
+        closest = -1
+
+        for distance, angle in asteroid_distance_angles:
+            if (angle <= 120+15 and angle >= 120-15) and (distance < closest or closest == -1):
+                closest = distance
+        
+        closest -= ship_state['radius']
+
+        self.closest_danger_front_left = closest
+
+    def update_closest_danger_front_right(self, ship_state: Dict, game_state: Dict) -> None:
+        asteroid_distance_angles = self.get_asteroid_distance_angles(ship_state, game_state)
+        
+        closest = -1
+
+        for distance, angle in asteroid_distance_angles:
+            if (angle <= 60+15 and angle >= 60-15) and (distance < closest or closest == -1):
+                closest = distance
+        
+        closest -= ship_state['radius']
+
+        self.closest_danger_front_right = closest
 
 
     def update_closest_danger_back(self, ship_state: Dict, game_state: Dict) -> None:
@@ -421,6 +461,8 @@ class DangerFuzzy(KesslerController):
             if (angle <= -45 and angle >= -135) and (distance < closest or closest == -1):
                 closest = distance
         
+        closest -= ship_state['radius']
+
         self.closest_danger_back = closest
 
     def update_closest_danger_left(self, ship_state: Dict, game_state: Dict) -> None:
@@ -429,9 +471,11 @@ class DangerFuzzy(KesslerController):
         closest = -1
 
         for distance, angle in asteroid_distance_angles:
-            if (angle <= -135 or angle >= 135) and (distance < closest or closest == -1):
+            if (angle <= -135 or angle >= 180-15) and (distance < closest or closest == -1):
                 closest = distance
         
+        closest -= ship_state['radius']
+
         self.closest_danger_left = closest
 
     def update_closest_danger_right(self, ship_state: Dict, game_state: Dict) -> None:
@@ -440,9 +484,11 @@ class DangerFuzzy(KesslerController):
         closest = -1
 
         for distance, angle in asteroid_distance_angles:
-            if (angle <= 45 and angle >= -45) and (distance < closest or closest == -1):
+            if (angle <= 15 and angle >= -45) and (distance < closest or closest == -1):
                 closest = distance
         
+        closest -= ship_state['radius']
+
         self.closest_danger_right = closest
 
     def update_distance_net_front(self, ship_state: Dict, game_state: Dict) -> None:
@@ -490,3 +536,13 @@ class DangerFuzzy(KesslerController):
             str: name of this controller
         """
         return "Fuzzy Tree Controller"
+
+
+def normalize(num, mx, symmetric=False):
+    if symmetric:
+        mn = -mx
+    else:
+        mn = 0
+    
+    normal = np.clip(num, mn, mx) / mx
+    return normal
