@@ -48,29 +48,39 @@ def create_fuzzy_system() -> Sims:
     fire_command = ctrl.Consequent(np.linspace(0, 1, 100), 'fire_command')
 
     # Membership Functions
-    target_angle_error['left'] = fuzz.trimf(target_angle_error.universe, (-1, -1, 0))
-    target_angle_error['center'] = fuzz.trimf(target_angle_error.universe, (-1, 0, 1))
-    target_angle_error['right'] = fuzz.trimf(target_angle_error.universe, (0, 1, 1))
+    target_angle_error['very_left'] = fuzz.trimf(target_angle_error.universe, (-1, -1, -0.5))
+    target_angle_error['little_left'] = fuzz.trimf(target_angle_error.universe, (-1, -0.5, 0))
+    target_angle_error['center'] = fuzz.trimf(target_angle_error.universe, (-0.5, 0, 0.5))
+    target_angle_error['little_right'] = fuzz.trimf(target_angle_error.universe, (0, 0.5, 1))
+    target_angle_error['very_right'] = fuzz.trimf(target_angle_error.universe, (0.5, 1, 1))
 
-    closest_danger_front['close'] = fuzz.trimf(closest_danger_front.universe, (0, 0, 1))
-    closest_danger_front['far'] = fuzz.trimf(closest_danger_front.universe, (0, 1, 1))
+    closest_danger_front['close'] = fuzz.trimf(closest_danger_front.universe, (0, 0, 0.5))
+    closest_danger_front['mid'] = fuzz.trimf(closest_danger_front.universe, (0, 0.5, 1))
+    closest_danger_front['far'] = fuzz.trimf(closest_danger_front.universe, (0.5, 1, 1))
 
-    closest_danger_back['close'] = fuzz.trimf(closest_danger_back.universe, (0, 0, 1))
-    closest_danger_back['far'] = fuzz.trimf(closest_danger_back.universe, (0, 1, 1))
+    closest_danger_back['close'] = fuzz.trimf(closest_danger_back.universe, (0, 0, 0.5))
+    closest_danger_back['mid'] = fuzz.trimf(closest_danger_back.universe, (0, 0.5, 1))
+    closest_danger_back['far'] = fuzz.trimf(closest_danger_back.universe, (0.5, 1, 1))
 
-    closest_danger_left['close'] = fuzz.trimf(closest_danger_left.universe, (0, 0, 1))
-    closest_danger_left['far'] = fuzz.trimf(closest_danger_left.universe, (0, 1, 1))
+    closest_danger_left['close'] = fuzz.trimf(closest_danger_left.universe, (0, 0, 0.5))
+    closest_danger_left['mid'] = fuzz.trimf(closest_danger_left.universe, (0, 0.5, 1))
+    closest_danger_left['far'] = fuzz.trimf(closest_danger_left.universe, (0.5, 1, 1))
 
-    closest_danger_right['close'] = fuzz.trimf(closest_danger_right.universe, (0, 0, 1))
-    closest_danger_right['far'] = fuzz.trimf(closest_danger_right.universe, (0, 1, 1))
+    closest_danger_right['close'] = fuzz.trimf(closest_danger_right.universe, (0, 0, 0.5))
+    closest_danger_right['close'] = fuzz.trimf(closest_danger_right.universe, (0, 0.5, 1))
+    closest_danger_right['far'] = fuzz.trimf(closest_danger_right.universe, (0.5, 1, 1))
 
-    distance_net_front['front_distance'] = fuzz.trimf(distance_net_front.universe, (0, 1, 1))
-    distance_net_front['equal'] = fuzz.trimf(distance_net_front.universe, (-1, 0, 1))
-    distance_net_front['back_distance'] = fuzz.trimf(distance_net_front.universe, (-1, -1, 0))
+    distance_net_front['lots_space_ahead'] = fuzz.trimf(distance_net_front.universe, (0.5, 1, 1))
+    distance_net_front['little_space_ahead'] = fuzz.trimf(distance_net_front.universe, (0, 0.5, 1))
+    distance_net_front['equal'] = fuzz.trimf(distance_net_front.universe, (-0.5, 0, 0.5))
+    distance_net_front['little_space_behind'] = fuzz.trimf(distance_net_front.universe, (-1, -0.5, 0))
+    distance_net_front['lots_space_behind'] = fuzz.trimf(distance_net_front.universe, (-1, -1, -0.5))
 
-    distance_net_right['right_distance'] = fuzz.trimf(distance_net_right.universe, (0, 1, 1))
-    distance_net_right['equal'] = fuzz.trimf(distance_net_right.universe, (-1, 0, 1))
-    distance_net_right['left_distance'] = fuzz.trimf(distance_net_right.universe, (-1, -1, 0))
+    distance_net_right['lots_space_right'] = fuzz.trimf(distance_net_right.universe, (0.5, 1, 1))
+    distance_net_right['little_space_right'] = fuzz.trimf(distance_net_right.universe, (0, 0.5, 1))
+    distance_net_right['equal'] = fuzz.trimf(distance_net_right.universe, (-0.5, 0, 0.5))
+    distance_net_right['little_space_left'] = fuzz.trimf(distance_net_right.universe, (-1, -0.5, 0))
+    distance_net_right['lots_space_left'] = fuzz.trimf(distance_net_right.universe, (-1, -1, -0.5))
 
     ship_speed['fast_forward'] = fuzz.trimf(ship_speed.universe, (0.5, 1, 1))
     ship_speed['slow_forward'] = fuzz.trimf(ship_speed.universe, (0, 0.5, 1))
@@ -81,65 +91,71 @@ def create_fuzzy_system() -> Sims:
     danger['no'] = fuzz.zmf(danger.universe, 0.4, 0.6)
     danger['yes'] = fuzz.smf(danger.universe, 0.4, 0.6)
 
-    linear_thrust['reverse'] = fuzz.trimf(linear_thrust.universe, (-1, -1, 0))
-    linear_thrust['stop'] = fuzz.trimf(linear_thrust.universe, (-1, 0, 1))
-    linear_thrust['forward'] = fuzz.trimf(linear_thrust.universe, (0, 1, 1))
+    linear_thrust['fast_reverse'] = fuzz.trimf(linear_thrust.universe, (-1, -1, -0.5))
+    linear_thrust['slow_reverse'] = fuzz.trimf(linear_thrust.universe, (-1, -0.5, 0))
+    linear_thrust['stop'] = fuzz.trimf(linear_thrust.universe, (-0.5, 0, 0.5))
+    linear_thrust['slow_forward'] = fuzz.trimf(linear_thrust.universe, (0, 0.5, 1))
+    linear_thrust['fast_forward'] = fuzz.trimf(linear_thrust.universe, (0.5, 1, 1))
 
-    angular_thrust['left'] = fuzz.trimf(angular_thrust.universe, (-1, -1, 0))
-    angular_thrust['stop'] = fuzz.trimf(angular_thrust.universe, (-1, 0, 1))
-    angular_thrust['right'] = fuzz.trimf(angular_thrust.universe, (0, 1, 1))
+    angular_thrust['fast_left'] = fuzz.trimf(angular_thrust.universe, (-1, -1, -0.5))
+    angular_thrust['slow_left'] = fuzz.trimf(angular_thrust.universe, (-1, -0.5, 0))
+    angular_thrust['stop'] = fuzz.trimf(angular_thrust.universe, (-0.5, 0, 0.5))
+    angular_thrust['slow_right'] = fuzz.trimf(angular_thrust.universe, (0, 0.5, 1))
+    angular_thrust['fast_right'] = fuzz.trimf(angular_thrust.universe, (0.5, 1, 1))
 
     fire_command['no'] = fuzz.zmf(fire_command.universe, 0.4, 0.6)
     fire_command['yes'] = fuzz.smf(fire_command.universe, 0.4, 0.6)
 
     # Escape Rules
-    escape_linear1 = ctrl.Rule(distance_net_front['front_distance'] & ship_speed['fast_forward'], linear_thrust['stop'])
-    escape_linear2 = ctrl.Rule(distance_net_front['front_distance'] & ship_speed['slow_forward'], linear_thrust['forward'])
-    escape_linear3 = ctrl.Rule(distance_net_front['front_distance'] & (ship_speed['still'] | ship_speed['slow_backward'] | ship_speed['fast_backward']), linear_thrust['forward'])
+    escape_linear_rules = []
+    escape_linear_rules.append(ctrl.Rule(distance_net_front['lots_space_ahead'] & ship_speed['fast_forward'], linear_thrust['stop']))
+    escape_linear_rules.append(ctrl.Rule(distance_net_front['lots_space_ahead'] & ship_speed['slow_forward'], linear_thrust['slow_forward']))
+    escape_linear_rules.append(ctrl.Rule(distance_net_front['lots_space_ahead'] & (ship_speed['still'] | ship_speed['slow_backward'] | ship_speed['fast_backward']), linear_thrust['fast_forward']))
+    escape_linear_rules.append(ctrl.Rule(distance_net_front['little_space_ahead'] & ship_speed['fast_forward'], linear_thrust['stop']))
+    escape_linear_rules.append(ctrl.Rule(distance_net_front['little_space_ahead'] & ship_speed['slow_forward'], linear_thrust['stop']))
+    escape_linear_rules.append(ctrl.Rule(distance_net_front['little_space_ahead'] & (ship_speed['still'] | ship_speed['slow_backward'] | ship_speed['fast_backward']), linear_thrust['slow_forward']))
+    escape_linear_rules.append(ctrl.Rule(distance_net_front['equal'] & ship_speed['fast_forward'], linear_thrust['slow_reverse']))
+    escape_linear_rules.append(ctrl.Rule(distance_net_front['equal'] & (ship_speed['slow_forward'] | ship_speed['still'] | ship_speed['slow_backward']), linear_thrust['stop']))
+    escape_linear_rules.append(ctrl.Rule(distance_net_front['equal'] & ship_speed['fast_backward'], linear_thrust['slow_forward']))
+    escape_linear_rules.append(ctrl.Rule(distance_net_front['little_space_behind'] & ship_speed['fast_backward'], linear_thrust['stop']))
+    escape_linear_rules.append(ctrl.Rule(distance_net_front['little_space_behind'] & ship_speed['slow_backward'], linear_thrust['stop']))
+    escape_linear_rules.append(ctrl.Rule(distance_net_front['little_space_behind'] & (ship_speed['still'] | ship_speed['slow_forward'] | ship_speed['fast_forward']), linear_thrust['slow_reverse']))
+    escape_linear_rules.append(ctrl.Rule(distance_net_front['lots_space_behind'] & ship_speed['fast_backward'], linear_thrust['stop']))
+    escape_linear_rules.append(ctrl.Rule(distance_net_front['lots_space_behind'] & ship_speed['slow_backward'], linear_thrust['slow_reverse']))
+    escape_linear_rules.append(ctrl.Rule(distance_net_front['lots_space_behind'] & (ship_speed['still'] | ship_speed['slow_forward'] | ship_speed['fast_forward']), linear_thrust['fast_reverse']))
 
-    escape_linear4 = ctrl.Rule(distance_net_front['equal'], linear_thrust['stop'])
-
-    escape_linear5 = ctrl.Rule(distance_net_front['back_distance'] & ship_speed['fast_backward'], linear_thrust['stop'])
-    escape_linear6 = ctrl.Rule(distance_net_front['back_distance'] & ship_speed['slow_backward'], linear_thrust['reverse'])
-    escape_linear7 = ctrl.Rule(distance_net_front['back_distance'] & (ship_speed['still'] | ship_speed['slow_forward'] | ship_speed['fast_forward']), linear_thrust['reverse'])
-
-    escape_linear_rules = [escape_linear1, 
-                           escape_linear2, 
-                           escape_linear3,
-                           escape_linear4,
-                           escape_linear5,
-                           escape_linear6,
-                           escape_linear7, 
-                           ]
-
-    escape_angular1 = ctrl.Rule(distance_net_right['right_distance'], angular_thrust['right'])
-    escape_angular2 = ctrl.Rule(distance_net_right['left_distance'], angular_thrust['left'])
-    escape_angular3 = ctrl.Rule(distance_net_right['equal'], angular_thrust['stop'])
+    escape_angular_rules = []
+    escape_angular_rules.append(ctrl.Rule(distance_net_right['lots_space_left'], angular_thrust['fast_left']))
+    escape_angular_rules.append(ctrl.Rule(distance_net_right['little_space_left'], angular_thrust['slow_left']))
+    escape_angular_rules.append(ctrl.Rule(distance_net_right['equal'], angular_thrust['stop']))
+    escape_angular_rules.append(ctrl.Rule(distance_net_right['little_space_right'], angular_thrust['slow_right']))
+    escape_angular_rules.append(ctrl.Rule(distance_net_right['lots_space_right'], angular_thrust['fast_right']))
     
-    escape_angular_rules = [escape_angular1, escape_angular2, escape_angular3]
-
     # Attack Rules
     # attack_linear1 = ctrl.Rule()
 
-    attack_angular1 = ctrl.Rule(target_angle_error['left'], angular_thrust['left'])
-    attack_angular2 = ctrl.Rule(target_angle_error['right'], angular_thrust['right'])
-    attack_angular3 = ctrl.Rule(target_angle_error['center'], angular_thrust['stop'])
+    attack_angular_rules = []
+    attack_angular_rules.append(ctrl.Rule(target_angle_error['very_left'], angular_thrust['fast_left']))
+    attack_angular_rules.append(ctrl.Rule(target_angle_error['little_left'], angular_thrust['slow_left']))
+    attack_angular_rules.append(ctrl.Rule(target_angle_error['center'], angular_thrust['stop']))
+    attack_angular_rules.append(ctrl.Rule(target_angle_error['little_right'], angular_thrust['slow_right']))
+    attack_angular_rules.append(ctrl.Rule(target_angle_error['very_right'], angular_thrust['fast_right']))
 
-    attack_angular_rules = [attack_angular1, attack_angular2, attack_angular3]
-
-    danger1 = ctrl.Rule(
+    # Danger Rules
+    danger_rules = []
+    danger_rules.append(ctrl.Rule(
         closest_danger_front['close'] | closest_danger_back['close'] | closest_danger_left['close'] | closest_danger_right['close'],
-        danger['yes'])
-    danger2 = ctrl.Rule(
+        danger['yes']))
+    danger_rules.append(ctrl.Rule(
         closest_danger_front['far'] & closest_danger_back['far'] & closest_danger_left['far'] & closest_danger_right['far'],
-        danger['no'])
+        danger['no']))
 
-    danger_rules = [danger1, danger2]
+    # Fire Rules
+    fire_rules = []
+    fire_rules.append(ctrl.Rule(target_angle_error['center'], fire_command['yes']))
+    fire_rules.append(ctrl.Rule(target_angle_error['little_left'] | target_angle_error['little_right'], fire_command['no']))
+    fire_rules.append(ctrl.Rule(target_angle_error['very_left'] | target_angle_error['very_right'], fire_command['no']))
 
-    fire1 = ctrl.Rule(target_angle_error['center'], fire_command['yes'])
-    fire2 = ctrl.Rule(target_angle_error['left'] | target_angle_error['right'], fire_command['no'])
-
-    fire_rules = [fire1, fire2]
 
     # Control systems and simulators
     danger_ctrl = ctrl.ControlSystem(danger_rules)
