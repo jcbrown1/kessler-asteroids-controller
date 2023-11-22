@@ -6,7 +6,7 @@ from controllers.fuzzy_tree_controller import FuzzyController
 import numpy as np
 
 game = kesslergame.kessler_game.KesslerGame()
-scenario = Scenario(name='test', num_asteroids=100)
+scenario = Scenario(name='test', num_asteroids=20)
 
 def evaluate_controller(controller: KesslerController) -> float:
     results = []

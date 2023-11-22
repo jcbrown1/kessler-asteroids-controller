@@ -5,7 +5,7 @@ from controllers.fuzzy_tree_controller import FuzzyController
 
 game = kesslergame.kessler_game.KesslerGame()
 scenario = Scenario(name='test', num_asteroids=10)
-controllers = [FuzzyController()]
+controllers = [BasicController()]
 
 game.run(scenario, controllers)
 
