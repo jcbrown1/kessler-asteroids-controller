@@ -6,7 +6,7 @@ from controllers.simple_fuzzy import SimpleFuzzy
 from controllers.fuzzy_discrete_danger import DangerFuzzy
 
 game = kesslergame.kessler_game.KesslerGame()
-scenario = Scenario(name='test', num_asteroids=15)
+scenario = Scenario(name='test', num_asteroids=1)
 controllers = [SimpleFuzzy()]
 
 game.run(scenario, controllers)

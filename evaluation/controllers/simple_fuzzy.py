@@ -122,7 +122,6 @@ class SimpleFuzzy(KesslerController):
 
         angular_thrust = sim.output['angular_thrust'] * angular_scaling
         angular_thrust = self.clip_angular_thrust(angular_thrust)
-
         fire_command = True
 
         command = (linear_thrust, angular_thrust, fire_command)
@@ -184,20 +183,40 @@ class SimpleFuzzy(KesslerController):
 
     def update_target_angle_error(self) -> None:
         closest_asteroid = self.get_closest_asteroid(self.ship_state, self.game_state)
+        
+        if closest_asteroid is None:
+            print('No closest asteroid?')
+            return 0.0
 
         my_angle = self.ship_state['heading']
 
-        relative_position = np.array(closest_asteroid['position']) - np.array(self.ship_state['position'])
-        set_point_angle = np.arctan2(relative_position[1], relative_position[0])
-        set_point_angle = np.rad2deg(set_point_angle)
-        relative_distance = np.linalg.norm(relative_position)
+        vec_pos_diff = np.array(closest_asteroid['position']) - np.array(self.ship_state['position'])
+        vel_asteroid = closest_asteroid['velocity']
+        bullet_speed = 800
+
+        a = bullet_speed**2 - np.linalg.norm(vel_asteroid)**2
+        b = -2 * np.dot(vec_pos_diff, vel_asteroid)
+        c = - np.linalg.norm(vec_pos_diff)**2                                               
+        b2 = b / a
+        c2  = c / a 
+
+        t1 = (-b2 + np.sqrt(b2**2 - 4*c2))
+        t2 = (-b2 - np.sqrt(b2**2 - 4*c2))
+
+        t = max(t1, t2)
+
+        y = vec_pos_diff[1] + vel_asteroid[1] * t
+        x = vec_pos_diff[0] + vel_asteroid[0] * t
+        set_point_angle = np.rad2deg(np.arctan2(y, x))
+
+        # DETERMINE THETA
 
         error = (my_angle - set_point_angle) % 360
         if error > 180:
             error -= 360
 
         self.target_angle_error = -error
-        self.target_asteroid_distance = relative_distance
+        self.target_asteroid_distance = np.linalg.norm(vec_pos_diff)
 
     def update_ship_velocity(self) -> None:
         speed = self.ship_state['speed']
