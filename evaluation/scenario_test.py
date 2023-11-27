@@ -1,7 +1,7 @@
 import time
 from kesslergame import Scenario, KesslerGame, GraphicsType
 from controllers.simple_fuzzy import SimpleFuzzy
-from scott_dick_controller import ScottDickController
+from controllers.scott_dick_controller import ScottDickController
 from graphics_both import GraphicsBoth
 
 my_test_scenario = Scenario(name='Test Scenario',
