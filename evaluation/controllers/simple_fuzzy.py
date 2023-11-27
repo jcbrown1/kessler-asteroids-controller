@@ -78,11 +78,27 @@ def create_fuzzy_system() -> ctrl.ControlSystemSimulation:
     rules.append(ctrl.Rule(target_asteroid_distance['very_close'] & (current_speed['stop'] | current_speed['slow_forward'] | current_speed['fast_forward']), linear_thrust['fast_reverse']))
     rules.append(ctrl.Rule(target_asteroid_distance['very_close'] & current_speed['slow_reverse'], linear_thrust['slow_reverse']))
     rules.append(ctrl.Rule(target_asteroid_distance['very_close'] & current_speed['fast_reverse'], linear_thrust['stop']))
-    rules.append(ctrl.Rule(target_angle_error['very_left'], (angular_thrust['fast_left'], linear_thrust['stop'])))
-    rules.append(ctrl.Rule(target_angle_error['little_left'], (angular_thrust['slow_left'], linear_thrust['stop'])))
+    rules.append(ctrl.Rule(target_angle_error['very_left'] & current_speed['fast_forward'], (angular_thrust['fast_left'], linear_thrust['fast_reverse'])))
+    rules.append(ctrl.Rule(target_angle_error['very_left'] & current_speed['slow_forward'], (angular_thrust['fast_left'], linear_thrust['slow_reverse'])))
+    rules.append(ctrl.Rule(target_angle_error['very_left'] & current_speed['stop'], (angular_thrust['fast_left'], linear_thrust['stop'])))
+    rules.append(ctrl.Rule(target_angle_error['very_left'] & current_speed['slow_reverse'], (angular_thrust['fast_left'], linear_thrust['slow_forward'])))
+    rules.append(ctrl.Rule(target_angle_error['very_left'] & current_speed['fast_reverse'], (angular_thrust['fast_left'], linear_thrust['fast_forward'])))
+    rules.append(ctrl.Rule(target_angle_error['little_left'] & current_speed['fast_forward'], (angular_thrust['slow_left'], linear_thrust['fast_reverse'])))
+    rules.append(ctrl.Rule(target_angle_error['little_left'] & current_speed['slow_forward'], (angular_thrust['slow_left'], linear_thrust['slow_reverse'])))
+    rules.append(ctrl.Rule(target_angle_error['little_left'] & current_speed['stop'], (angular_thrust['slow_left'], linear_thrust['stop'])))
+    rules.append(ctrl.Rule(target_angle_error['little_left'] & current_speed['slow_reverse'], (angular_thrust['slow_left'], linear_thrust['slow_forward'])))
+    rules.append(ctrl.Rule(target_angle_error['little_left'] & current_speed['fast_reverse'], (angular_thrust['slow_left'], linear_thrust['fast_forward'])))
     rules.append(ctrl.Rule(target_angle_error['center'], angular_thrust['stop']))
-    rules.append(ctrl.Rule(target_angle_error['little_right'], (angular_thrust['slow_right'], linear_thrust['stop'])))
-    rules.append(ctrl.Rule(target_angle_error['very_right'], (angular_thrust['fast_right'], linear_thrust['stop'])))
+    rules.append(ctrl.Rule(target_angle_error['little_right'] & current_speed['fast_forward'], (angular_thrust['slow_right'], linear_thrust['fast_reverse'])))
+    rules.append(ctrl.Rule(target_angle_error['little_right'] & current_speed['slow_forward'], (angular_thrust['slow_right'], linear_thrust['slow_reverse'])))
+    rules.append(ctrl.Rule(target_angle_error['little_right'] & current_speed['stop'], (angular_thrust['slow_right'], linear_thrust['stop'])))
+    rules.append(ctrl.Rule(target_angle_error['little_right'] & current_speed['slow_reverse'], (angular_thrust['slow_right'], linear_thrust['slow_forward'])))
+    rules.append(ctrl.Rule(target_angle_error['little_right'] & current_speed['fast_reverse'], (angular_thrust['slow_right'], linear_thrust['fast_forward'])))
+    rules.append(ctrl.Rule(target_angle_error['very_right'] & current_speed['fast_forward'], (angular_thrust['fast_right'], linear_thrust['fast_reverse'])))
+    rules.append(ctrl.Rule(target_angle_error['very_right'] & current_speed['slow_forward'], (angular_thrust['fast_right'], linear_thrust['slow_reverse'])))
+    rules.append(ctrl.Rule(target_angle_error['very_right'] & current_speed['stop'], (angular_thrust['fast_right'], linear_thrust['stop'])))
+    rules.append(ctrl.Rule(target_angle_error['very_right'] & current_speed['slow_reverse'], (angular_thrust['fast_right'], linear_thrust['slow_forward'])))
+    rules.append(ctrl.Rule(target_angle_error['very_right'] & current_speed['fast_reverse'], (angular_thrust['fast_right'], linear_thrust['fast_forward'])))
 
     fuzzy_ctrl = ctrl.ControlSystem(rules)
     fuzzy_sim = ctrl.ControlSystemSimulation(fuzzy_ctrl)
@@ -100,7 +116,7 @@ class SimpleFuzzy(KesslerController):
 
         self.target_distance = 200
         self.angle_max = 180
-        self.max_speed = 200
+        self.max_speed = 450
 
         self.linear_scaling = 500
         self.angular_scaling = 500

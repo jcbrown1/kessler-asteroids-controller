@@ -11,11 +11,11 @@ ga = ega.GA()
 
 ga.chromosome_length = 4
 
-ga.target_fitness_type = 'max'
-ga.fitness_goal = 300
+ga.target_fitness_type = 'min'
+ga.fitness_goal = 60
 
-ga.population_size = 1
-ga.generation_goal = 2
+ga.population_size = 5
+ga.generation_goal = 5
 
 ga.gene_impl = gen_gene
 ga.fitness_function_impl = evaluate_chromosome
