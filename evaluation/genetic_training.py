@@ -10,7 +10,7 @@ def gen_gene():
 
 ga = ega.GA()
 
-ga.chromosome_length = 3
+ga.chromosome_length = 58
 
 ga.target_fitness_type = 'max'
 ga.fitness_goal = 300
