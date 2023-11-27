@@ -44,7 +44,9 @@ def test_average_scores(num_games=5):
             team_sums[f"Team{i + 1}"] = [s + v for s, v in zip(team_sums[f"Team{i + 1}"], [team.asteroids_hit, team.deaths, team.accuracy, team.mean_eval_time])]
 
     team_averages = {team: [s / num_games for s in sums] for team, sums in team_sums.items()}
-
+    print("Metric : Our Controller vs Scott's Controller")
+    for idx, metric in enumerate(["Asteroids Hit", "Deaths", "Accuracy", "Mean Eval Time"]):
+        print(f"{metric}: {team_averages['Team1'][idx]} vs {team_averages['Team2'][idx]}")
     return team_averages
 
 print(test_average_scores(3))
