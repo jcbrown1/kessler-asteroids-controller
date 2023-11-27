@@ -1,7 +1,8 @@
 import time
 from kesslergame import Scenario, KesslerGame, GraphicsType
 from controllers.simple_fuzzy import SimpleFuzzy
-from scott_dick_controller import ScottDickController
+from controllers.genetic_fuzzy import genetic_controller
+from controllers.scott_dick_controller import ScottDickController
 from graphics_both import GraphicsBoth
 
 my_test_scenario = Scenario(name='Test Scenario',
@@ -24,7 +25,7 @@ def run_game():
     game = KesslerGame(settings=game_settings) # Use this to visualize the game scenario
     # game = TrainerEnvironment(settings=game_settings) # Use this for max-speed, no-graphics simulation
     pre = time.perf_counter()
-    score, perf_data = game.run(scenario=my_test_scenario, controllers = [SimpleFuzzy(), ScottDickController()])
+    score, perf_data = game.run(scenario=my_test_scenario, controllers = [genetic_controller(), SimpleFuzzy()])
     print('Scenario eval time: '+str(time.perf_counter()-pre))
     print(score.stop_reason)
     print('Asteroids hit: ' + str([team.asteroids_hit for team in score.teams]))
@@ -44,7 +45,9 @@ def test_average_scores(num_games=5):
             team_sums[f"Team{i + 1}"] = [s + v for s, v in zip(team_sums[f"Team{i + 1}"], [team.asteroids_hit, team.deaths, team.accuracy, team.mean_eval_time])]
 
     team_averages = {team: [s / num_games for s in sums] for team, sums in team_sums.items()}
-
+    print("Metric : Our Genetic vs Simple Controller")
+    for idx, metric in enumerate(["Asteroids Hit", "Deaths", "Accuracy", "Mean Eval Time"]):
+        print(f"{metric}: {team_averages['Team1'][idx]} vs {team_averages['Team2'][idx]}")
     return team_averages
 
 print(test_average_scores(3))

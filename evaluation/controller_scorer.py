@@ -1,39 +1,53 @@
 import kesslergame
-from kesslergame.kessler_game import TrainerEnvironment
+import time
+from kesslergame.kessler_game import TrainerEnvironment, KesslerGame
 from kesslergame.scenario import Scenario
 from kesslergame.controller import KesslerController
-from controllers.simple_fuzzy import genetic_controller
+from controllers.genetic_fuzzy import genetic_controller
 import numpy as np
 
-game = TrainerEnvironment()
-scenario = Scenario(name='test', num_asteroids=15)
+# game = TrainerEnvironment()  # Use this instead if you want NO GUI
+game = KesslerGame()
+scenario = Scenario(name='test', num_asteroids=10)
 
 def evaluate_controller(controller: KesslerController) -> float:
-    results = []
+    # results = []
+    times = []
+    num = 1
+    
+    start = time.time()
 
-    for _ in range(5):
+    for _ in range(num):
         info = game.run(scenario, [controller])
 
         # My god this is a hard number to get
         score_obj = info[0]
         team = score_obj.teams[0]
         score = team.asteroids_hit
-        results.append(score)
+        # results.append(score)
+        time_elapsed = time.time() - start
+        lives_remaining = team.lives_remaining
+        if lives_remaining == 0:
+            print('Did not clear screen. Setting time as 1000000')
+            time_elapsed = 1000000
+        times.append(time_elapsed)
+    # results.sort()
+    times.sort()
+    # true_score = np.average(results[0:num])
+    average_time = np.average(times[0:num])    
 
-    results.sort()
-    true_score = np.average(results[1:4])    
-
-    return true_score
+    # return true_score
+    return average_time
 
 def evaluate_chromosome(chromosome):
     controller = genetic_controller(chromosome)
     score = evaluate_controller(controller)
     return score
 
-def main():
-    from controllers.simple_fuzzy import SimpleFuzzy
-    score = evaluate_controller(SimpleFuzzy())
-    print(score)
+# def main():
+#     from controllers. import SimpleFuzzy
+#     score = evaluate_controller(SimpleFuzzy())
+#     print(score)
 
-if __name__ == '__main__':
-    main()
+# if __name__ == '__main__':
+#     main()
