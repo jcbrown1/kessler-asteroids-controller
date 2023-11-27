@@ -5,14 +5,14 @@ from kesslergame.controller import KesslerController
 from controllers.genetic_fuzzy import genetic_controller
 import numpy as np
 
-# game = TrainerEnvironment()
+# game = TrainerEnvironment()  # Use this instead if you want NO GUI
 game = KesslerGame()
 scenario = Scenario(name='test', num_asteroids=15)
 
 def evaluate_controller(controller: KesslerController) -> float:
     results = []
-
-    for _ in range(5):
+    num = 1
+    for _ in range(num):
         info = game.run(scenario, [controller])
 
         # My god this is a hard number to get
@@ -22,7 +22,7 @@ def evaluate_controller(controller: KesslerController) -> float:
         results.append(score)
 
     results.sort()
-    true_score = np.average(results[1:4])    
+    true_score = np.average(results[0:num])    
 
     return true_score
 

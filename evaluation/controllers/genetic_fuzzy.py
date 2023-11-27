@@ -9,11 +9,12 @@ from kesslergame import KesslerController
 from kesslergame.asteroid import Asteroid
 
 
-def create_fuzzy_system(values: list[float]) -> ctrl.ControlSystemSimulation:
+def create_genetic_fuzzy_system(values) -> ctrl.ControlSystemSimulation:
 
     # Antecedents
     target_angle_error = ctrl.Antecedent(np.linspace(-1, 1, 100), 'target_angle_error')
     target_asteroid_distance = ctrl.Antecedent(np.linspace(0, 1, 100), 'target_asteroid_distance')
+    current_speed = ctrl.Antecedent(np.linspace(-1, 1, 100), 'current_speed')
 
     # Consequents
     linear_thrust = ctrl.Consequent(np.linspace(-1, 1, 100), 'linear_thrust')
@@ -21,47 +22,67 @@ def create_fuzzy_system(values: list[float]) -> ctrl.ControlSystemSimulation:
     fire_command = ctrl.Consequent(np.linspace(0, 1, 100), 'fire_command')
 
     # Membership Functions
-    # target_angle_error['very_left'] = fuzz.trimf(target_angle_error.universe, (-1, -1, -0.5))
-    target_angle_error['very_left'] = fuzz.zmf(target_angle_error.universe, *get(values, 2))
-    target_angle_error['little_left'] = fuzz.trimf(target_angle_error.universe, get(values, 3))
-    target_angle_error['center'] = fuzz.trimf(target_angle_error.universe, get(values, 3))
-    target_angle_error['little_right'] = fuzz.trimf(target_angle_error.universe, get(values, 3))
-    target_angle_error['very_right'] = fuzz.smf(target_angle_error.universe, *get(values, 2))
+    target_angle_error['very_left'] = fuzz.trimf(target_angle_error.universe, (-1, -1, -0.5))
+    target_angle_error['little_left'] = fuzz.trimf(target_angle_error.universe, (-1, -0.5, 0))
+    target_angle_error['center'] = fuzz.trimf(target_angle_error.universe, (-0.5, 0, 0.5))
+    target_angle_error['little_right'] = fuzz.trimf(target_angle_error.universe, (0, 0.5, 1))
+    target_angle_error['very_right'] = fuzz.trimf(target_angle_error.universe, (0.5, 1, 1))
 
-    target_asteroid_distance['very_far'] = fuzz.zmf(target_asteroid_distance.universe, *get(values, 2))
-    target_asteroid_distance['far'] = fuzz.trimf(target_asteroid_distance.universe, get(values, 3))
-    target_asteroid_distance['in_range'] = fuzz.trimf(target_asteroid_distance.universe, get(values, 3))
-    target_asteroid_distance['close'] = fuzz.trimf(target_asteroid_distance.universe, get(values, 3))
-    target_asteroid_distance['very_close'] = fuzz.smf(target_asteroid_distance.universe, *get(values, 2))
+    target_asteroid_distance['very_far'] = fuzz.trimf(target_asteroid_distance.universe, (0.75, 1, 1))
+    target_asteroid_distance['far'] = fuzz.trimf(target_asteroid_distance.universe, (0.5, 0.75, 1))
+    target_asteroid_distance['in_range'] = fuzz.trimf(target_asteroid_distance.universe, (0.25, 0.5, 0.75))
+    target_asteroid_distance['close'] = fuzz.trimf(target_asteroid_distance.universe, (0, 0.25, 0.5))
+    target_asteroid_distance['very_close'] = fuzz.trimf(target_asteroid_distance.universe, (0, 0, 0.25))
 
-    linear_thrust['fast_reverse'] = fuzz.zmf(linear_thrust.universe, *get(values, 2))
-    linear_thrust['slow_reverse'] = fuzz.trimf(linear_thrust.universe, get(values, 3))
-    linear_thrust['stop'] = fuzz.trimf(linear_thrust.universe, get(values, 3))
-    linear_thrust['slow_forward'] = fuzz.trimf(linear_thrust.universe, get(values, 3))
-    linear_thrust['fast_forward'] = fuzz.smf(linear_thrust.universe, *get(values, 2))
+    current_speed['fast_reverse'] = fuzz.zmf(current_speed.universe, -1, -0.5)
+    current_speed['slow_reverse'] = fuzz.trimf(current_speed.universe, (-1, -0.5, 0))
+    current_speed['stop'] = fuzz.trimf(current_speed.universe, (-0.5, 0, 0.5))
+    current_speed['slow_forward'] = fuzz.trimf(current_speed.universe, (0, 0.5, 1))
+    current_speed['fast_forward'] = fuzz.smf(current_speed.universe, 0.5, 1)
 
-    angular_thrust['fast_left'] = fuzz.zmf(angular_thrust.universe, *get(values, 2))
-    angular_thrust['slow_left'] = fuzz.trimf(angular_thrust.universe, get(values, 3))
-    angular_thrust['stop'] = fuzz.trimf(angular_thrust.universe, get(values, 3))
-    angular_thrust['slow_right'] = fuzz.trimf(angular_thrust.universe, get(values, 3))
-    angular_thrust['fast_right'] = fuzz.smf(angular_thrust.universe, *get(values, 2))
+    linear_thrust['fast_reverse'] = fuzz.trimf(linear_thrust.universe, (-1, -1, -0.5))
+    linear_thrust['slow_reverse'] = fuzz.trimf(linear_thrust.universe, (-1, -0.5, 0))
+    linear_thrust['stop'] = fuzz.trimf(linear_thrust.universe, (-0.5, 0, 0.5))
+    linear_thrust['slow_forward'] = fuzz.trimf(linear_thrust.universe, (0, 0.5, 1))
+    linear_thrust['fast_forward'] = fuzz.trimf(linear_thrust.universe, (0.5, 1, 1))
 
-    fire_command['no'] = fuzz.zmf(fire_command.universe, *get(values, 2))
-    fire_command['yes'] = fuzz.smf(fire_command.universe, *get(values, 2))
+    angular_thrust['fast_left'] = fuzz.trimf(angular_thrust.universe, (-1, -1, -0.5))
+    angular_thrust['slow_left'] = fuzz.trimf(angular_thrust.universe, (-1, -0.5, 0))
+    angular_thrust['stop'] = fuzz.trimf(angular_thrust.universe, (-0.5, 0, 0.5))
+    angular_thrust['slow_right'] = fuzz.trimf(angular_thrust.universe, (0, 0.5, 1))
+    angular_thrust['fast_right'] = fuzz.trimf(angular_thrust.universe, (0.5, 1, 1))
+
+    fire_command['no'] = fuzz.zmf(fire_command.universe, 0.4, 0.6)
+    fire_command['yes'] = fuzz.smf(fire_command.universe, 0.4, 0.6)
     
     # Rules
     rules = []
 
-    rules.append(ctrl.Rule(target_asteroid_distance['very_far'], linear_thrust['fast_forward']))
-    rules.append(ctrl.Rule(target_asteroid_distance['far'], linear_thrust['slow_forward']))
-    rules.append(ctrl.Rule(target_asteroid_distance['in_range'], linear_thrust['stop']))
-    rules.append(ctrl.Rule(target_asteroid_distance['close'], linear_thrust['slow_reverse']))
-    rules.append(ctrl.Rule(target_asteroid_distance['very_close'], linear_thrust['fast_reverse']))
-    rules.append(ctrl.Rule(target_angle_error['very_left'], angular_thrust['fast_left']))
-    rules.append(ctrl.Rule(target_angle_error['little_left'], angular_thrust['slow_left']))
+    rules.append(ctrl.Rule(target_asteroid_distance['very_far'] & current_speed['fast_forward'], linear_thrust['slow_reverse']))
+    rules.append(ctrl.Rule(target_asteroid_distance['very_far'] & current_speed['slow_forward'], linear_thrust['stop']))
+    rules.append(ctrl.Rule(target_asteroid_distance['very_far'] & current_speed['stop'], linear_thrust['slow_forward']))
+    rules.append(ctrl.Rule(target_asteroid_distance['very_far'] & (current_speed['slow_reverse'] | current_speed['fast_reverse']), linear_thrust['fast_forward']))
+    rules.append(ctrl.Rule(target_asteroid_distance['far'] & current_speed['fast_forward'], linear_thrust['fast_reverse']))
+    rules.append(ctrl.Rule(target_asteroid_distance['far'] & current_speed['slow_forward'], linear_thrust['stop']))
+    rules.append(ctrl.Rule(target_asteroid_distance['far'] & current_speed['stop'], linear_thrust['slow_forward']))
+    rules.append(ctrl.Rule(target_asteroid_distance['far'] & (current_speed['slow_reverse'] | current_speed['fast_reverse']), linear_thrust['fast_forward']))
+    rules.append(ctrl.Rule(target_asteroid_distance['in_range'] & current_speed['fast_forward'], linear_thrust['fast_reverse']))
+    rules.append(ctrl.Rule(target_asteroid_distance['in_range'] & current_speed['slow_forward'], linear_thrust['slow_reverse']))
+    rules.append(ctrl.Rule(target_asteroid_distance['in_range'] & current_speed['stop'], linear_thrust['stop']))
+    rules.append(ctrl.Rule(target_asteroid_distance['in_range'] & current_speed['slow_reverse'], linear_thrust['slow_forward']))
+    rules.append(ctrl.Rule(target_asteroid_distance['in_range'] & current_speed['fast_reverse'], linear_thrust['fast_forward']))
+    rules.append(ctrl.Rule(target_asteroid_distance['close'] & (current_speed['slow_forward'] | current_speed['fast_forward']), linear_thrust['fast_reverse']))
+    rules.append(ctrl.Rule(target_asteroid_distance['close'] & current_speed['stop'], linear_thrust['slow_reverse']))
+    rules.append(ctrl.Rule(target_asteroid_distance['close'] & current_speed['slow_reverse'], linear_thrust['stop']))
+    rules.append(ctrl.Rule(target_asteroid_distance['close'] & current_speed['fast_reverse'], linear_thrust['slow_forward']))
+    rules.append(ctrl.Rule(target_asteroid_distance['very_close'] & (current_speed['stop'] | current_speed['slow_forward'] | current_speed['fast_forward']), linear_thrust['fast_reverse']))
+    rules.append(ctrl.Rule(target_asteroid_distance['very_close'] & current_speed['slow_reverse'], linear_thrust['slow_reverse']))
+    rules.append(ctrl.Rule(target_asteroid_distance['very_close'] & current_speed['fast_reverse'], linear_thrust['stop']))
+    rules.append(ctrl.Rule(target_angle_error['very_left'], (angular_thrust['fast_left'], linear_thrust['stop'])))
+    rules.append(ctrl.Rule(target_angle_error['little_left'], (angular_thrust['slow_left'], linear_thrust['stop'])))
     rules.append(ctrl.Rule(target_angle_error['center'], angular_thrust['stop']))
-    rules.append(ctrl.Rule(target_angle_error['little_right'], angular_thrust['slow_right']))
-    rules.append(ctrl.Rule(target_angle_error['very_right'], angular_thrust['fast_right']))
+    rules.append(ctrl.Rule(target_angle_error['little_right'], (angular_thrust['slow_right'], linear_thrust['stop'])))
+    rules.append(ctrl.Rule(target_angle_error['very_right'], (angular_thrust['fast_right'], linear_thrust['stop'])))
 
     fuzzy_ctrl = ctrl.ControlSystem(rules)
     fuzzy_sim = ctrl.ControlSystemSimulation(fuzzy_ctrl)
@@ -70,18 +91,31 @@ def create_fuzzy_system(values: list[float]) -> ctrl.ControlSystemSimulation:
 
 
 class GeneticFuzzy(KesslerController):
-    def __init__(self, values):
+    def __init__(self, values=False):
         """
         Any variables or initialization desired for the controller can be set up here
         """
-        sim = create_fuzzy_system(values)
+        sim = create_genetic_fuzzy_system(values)
         self.sim = sim
 
         self.target_distance = 200
         self.angle_max = 180
+        self.max_speed = 200
+
         self.linear_scaling = 500
         self.angular_scaling = 500
         self.eval_frames = 0  # required field in scenario test
+
+        if values is not False:
+            self.initialize_from_external(values)
+
+    def initialize_from_external(self, values):
+        self.target_distance = remap(get(values, 1), 150, 350)
+        self.angle_max = 180
+        self.max_speed = remap(get(values, 1), 200, 500)
+        
+        self.linear_scaling = remap(get(values, 1), 380, 580)
+        self.target_distance = remap(get(values, 1), 100, 500)
 
 
     def actions(self, ship_state: Dict, game_state: Dict) -> Tuple[float, float, bool, bool]:
@@ -113,11 +147,14 @@ class GeneticFuzzy(KesslerController):
 
         target_distance = self.target_distance
         angle_max = self.angle_max
+        max_speed = self.max_speed
+
         linear_scaling = self.linear_scaling
         angular_scaling = self.angular_scaling
 
         sim.input['target_angle_error'] = normalize(self.target_angle_error, angle_max, symmetric=True)
         sim.input['target_asteroid_distance'] = normalize(self.target_asteroid_distance, target_distance)
+        sim.input['current_speed'] = normalize(self.ship_speed, max_speed, symmetric=True)
 
         sim.compute()
 
@@ -126,6 +163,7 @@ class GeneticFuzzy(KesslerController):
 
         angular_thrust = sim.output['angular_thrust'] * angular_scaling
         angular_thrust = self.clip_angular_thrust(angular_thrust)
+
         fire_command = True
 
         command = (linear_thrust, angular_thrust, fire_command)
@@ -256,13 +294,22 @@ def normalize(num, mx, symmetric=False):
     normal = np.clip(num, mn, mx) / mx
     return normal
 
+
+
+def normalize(num, mx, symmetric=False):
+    if symmetric:
+        mn = -mx
+    else:
+        mn = 0
+    
+    normal = np.clip(num, mn, mx) / mx
+    return normal
+
 def genetic_controller(chromosome):
     values = []
     for gene in chromosome:
         values.append(gene.value)
     controller = GeneticFuzzy(values)
-    controller.linear_scaling = remap(get(values, 1), 480 - 100, 480 + 100)
-    controller.target_distance = remap(get(values, 1), 100, 500)
 
     return controller
 
