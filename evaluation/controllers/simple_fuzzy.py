@@ -80,6 +80,7 @@ class SimpleFuzzy(KesslerController):
         self.angle_max = 180
         self.linear_scaling = 500
         self.angular_scaling = 500
+        self.eval_frames = 0  # required field in scenario test
 
 
     def actions(self, ship_state: Dict, game_state: Dict) -> Tuple[float, float, bool, bool]:
@@ -101,6 +102,8 @@ class SimpleFuzzy(KesslerController):
         self.update_derived_features()
 
         command = self.get_command()
+
+        self.eval_frames +=1
 
         return command
 
