@@ -8,12 +8,25 @@ import numpy as np
 
 # game = TrainerEnvironment()  # Use this instead if you want NO GUI
 game = KesslerGame()
-scenario = Scenario(name='test', num_asteroids=10)
+scenario = Scenario(
+    name='test', 
+    # num_asteroids=10,
+    asteroid_states=[
+                    {'position' : (100, 100),'angle': 45, 'speed' : np.random.randint(10, 50), 'size' : np.random.randint(3, 4)},
+                    {'position' : (900, 100), 'angle' : 135, 'speed' : np.random.randint(10, 50)},
+                    {'position' : (900, 700), 'angle' : 225, 'speed' : np.random.randint(10, 50), 'size' : np.random.randint(3, 4)},
+                    {'position' : (100, 700), 'angle' : 315, 'speed' : np.random.randint(10, 50)},
+                    {'position' : (500, 100), 'angle' : 90, 'speed' : np.random.randint(10, 50)},
+                    {'position' : (100, 400), 'angle' : 0, 'speed' : np.random.randint(10, 50)},
+                    {'position' : (900, 400), 'angle' : 180, 'speed' : np.random.randint(10, 50)},
+                    {'position' : (500, 700), 'angle' : 270, 'speed' : np.random.randint(10, 50)}
+                ],
+    )
 
 def evaluate_controller(controller: KesslerController) -> float:
-    # results = []
-    times = []
-    num = 1
+    results = []
+    # times = []
+    num = 5
     
     start = time.time()
 
@@ -24,30 +37,32 @@ def evaluate_controller(controller: KesslerController) -> float:
         score_obj = info[0]
         team = score_obj.teams[0]
         score = team.asteroids_hit
-        # results.append(score)
+        print(f'Score {num} is {score}')
+        results.append(score)
         time_elapsed = time.time() - start
         lives_remaining = team.lives_remaining
-        if lives_remaining == 0:
-            print('Did not clear screen. Setting time as 1000000')
-            time_elapsed = 1000000
-        times.append(time_elapsed)
-    # results.sort()
-    times.sort()
-    # true_score = np.average(results[0:num])
-    average_time = np.average(times[0:num])    
+        # if lives_remaining == 0:
+        #     print('Did not clear screen. Setting time as 1000000')
+        #     time_elapsed = 1000000
+        # times.append(time_elapsed)
+    results.sort()
+    # times.sort()
+    true_score = np.average(results[0:num])
+    # average_time = np.average(times[0:num])    
+    print(f'Average {true_score}')
 
-    # return true_score
-    return average_time
+    return true_score
+    # return average_time
 
 def evaluate_chromosome(chromosome):
     controller = genetic_controller(chromosome)
     score = evaluate_controller(controller)
     return score
 
-# def main():
-#     from controllers. import SimpleFuzzy
-#     score = evaluate_controller(SimpleFuzzy())
-#     print(score)
+def main():
+    from controllers.simple_fuzzy import SimpleFuzzy
+    score = evaluate_controller(SimpleFuzzy())
+    print(score)
 
-# if __name__ == '__main__':
-#     main()
+if __name__ == '__main__':
+    main()

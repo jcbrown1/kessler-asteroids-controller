@@ -1,3 +1,4 @@
+import numpy as np
 import time
 from kesslergame import Scenario, KesslerGame, GraphicsType
 from controllers.simple_fuzzy import SimpleFuzzy
