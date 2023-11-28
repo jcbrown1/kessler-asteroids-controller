@@ -19,7 +19,7 @@ def create_fuzzy_system() -> ctrl.ControlSystemSimulation:
     # Consequents
     linear_thrust = ctrl.Consequent(np.linspace(-1, 1, 100), 'linear_thrust')
     angular_thrust = ctrl.Consequent(np.linspace(-1, 1, 100), 'angular_thrust')
-    fire_command = ctrl.Consequent(np.linspace(0, 1, 100), 'fire_command')
+    fire_command = ctrl.Consequent(np.linspace(-1, 1, 101), 'fire_command')
 
     # Membership Functions
     target_angle_error['very_left'] = fuzz.trimf(target_angle_error.universe, (-1, -1, -0.5))
@@ -52,54 +52,60 @@ def create_fuzzy_system() -> ctrl.ControlSystemSimulation:
     angular_thrust['slow_right'] = fuzz.trimf(angular_thrust.universe, (0, 0.5, 1))
     angular_thrust['fast_right'] = fuzz.trimf(angular_thrust.universe, (0.5, 1, 1))
 
-    fire_command['no'] = fuzz.zmf(fire_command.universe, 0.4, 0.6)
-    fire_command['yes'] = fuzz.smf(fire_command.universe, 0.4, 0.6)
+    fire_command['no'] = fuzz.trimf(fire_command.universe, [-1,-1,0.0])
+    fire_command['yes'] = fuzz.trimf(fire_command.universe, [0.0,1,1]) 
     
     # Rules
     rules = []
+    
+    rules.append(ctrl.Rule(target_asteroid_distance['very_far'] & current_speed['fast_forward'], (linear_thrust['slow_reverse'], fire_command['no'])))
+    rules.append(ctrl.Rule(target_asteroid_distance['very_far'] & current_speed['slow_forward'], linear_thrust['stop'], fire_command['no']))
+    rules.append(ctrl.Rule(target_asteroid_distance['very_far'] & current_speed['stop'], (linear_thrust['slow_forward'], fire_command['no'])))
+    rules.append(ctrl.Rule(target_asteroid_distance['very_far'] & (current_speed['slow_reverse'] | current_speed['fast_reverse']), (linear_thrust['fast_forward'], fire_command['no'])))
+    rules.append(ctrl.Rule(target_asteroid_distance['far'] & current_speed['fast_forward'], (linear_thrust['fast_reverse'], fire_command['no'])))
+    rules.append(ctrl.Rule(target_asteroid_distance['far'] & current_speed['slow_forward'], (linear_thrust['stop'], fire_command['yes'])))
+    rules.append(ctrl.Rule(target_asteroid_distance['far'] & current_speed['stop'], (linear_thrust['slow_forward'], fire_command['yes'])))
+    rules.append(ctrl.Rule(target_asteroid_distance['far'] & (current_speed['slow_reverse'] | current_speed['fast_reverse']), (linear_thrust['fast_forward'], fire_command['no'])))
+    rules.append(ctrl.Rule(target_asteroid_distance['in_range'] & current_speed['fast_forward'], (linear_thrust['fast_reverse'], fire_command['no'])))
+    rules.append(ctrl.Rule(target_asteroid_distance['in_range'] & current_speed['slow_forward'], (linear_thrust['slow_reverse'], fire_command['yes'])))
+    rules.append(ctrl.Rule(target_asteroid_distance['in_range'] & current_speed['stop'], (linear_thrust['stop'], fire_command['yes'])))
+    rules.append(ctrl.Rule(target_asteroid_distance['in_range'] & current_speed['slow_reverse'], (linear_thrust['slow_forward'], fire_command['yes'])))
+    rules.append(ctrl.Rule(target_asteroid_distance['in_range'] & current_speed['fast_reverse'], (linear_thrust['fast_forward'], fire_command['yes'])))
+    rules.append(ctrl.Rule(target_asteroid_distance['close'] & (current_speed['slow_forward'] | current_speed['fast_forward']), (linear_thrust['fast_reverse'], fire_command['yes'])))
+    rules.append(ctrl.Rule(target_asteroid_distance['close'] & current_speed['stop'], (linear_thrust['slow_reverse'], fire_command['yes'])))
+    rules.append(ctrl.Rule(target_asteroid_distance['close'] & current_speed['fast_reverse'], (linear_thrust['slow_forward'], fire_command['yes'])))
+    rules.append(ctrl.Rule(target_asteroid_distance['very_close'] & (current_speed['stop'] | current_speed['slow_forward'] | current_speed['fast_forward']), (linear_thrust['fast_reverse'], fire_command['yes'])))
+    rules.append(ctrl.Rule(target_asteroid_distance['very_close'] & current_speed['slow_reverse'], (linear_thrust['slow_reverse'], fire_command['yes'])))
+    rules.append(ctrl.Rule(target_asteroid_distance['very_close'] & current_speed['fast_reverse'], (linear_thrust['stop'], fire_command['yes'])))
+    rules.append(ctrl.Rule(target_angle_error['very_left'] & current_speed['fast_forward'], (angular_thrust['fast_left'], linear_thrust['fast_reverse'], fire_command['no'])))
+    rules.append(ctrl.Rule(target_angle_error['very_left'] & current_speed['slow_forward'], (angular_thrust['fast_left'], linear_thrust['slow_reverse'], fire_command['no'])))
+    rules.append(ctrl.Rule(target_angle_error['very_left'] & current_speed['stop'], (angular_thrust['fast_left'], linear_thrust['stop'], fire_command['no'])))
+    rules.append(ctrl.Rule(target_angle_error['very_left'] & current_speed['slow_reverse'], (angular_thrust['fast_left'], linear_thrust['slow_forward'], fire_command['no'])))
+    rules.append(ctrl.Rule(target_angle_error['very_left'] & current_speed['fast_reverse'], (angular_thrust['fast_left'], linear_thrust['fast_forward'], fire_command['no'])))
+    rules.append(ctrl.Rule(target_angle_error['little_left'] & current_speed['fast_forward'], (angular_thrust['slow_left'], linear_thrust['fast_reverse'], fire_command['yes'])))
+    rules.append(ctrl.Rule(target_angle_error['little_left'] & current_speed['slow_forward'], (angular_thrust['slow_left'], linear_thrust['slow_reverse'], fire_command['yes'])))
+    rules.append(ctrl.Rule(target_angle_error['little_left'] & current_speed['stop'], (angular_thrust['slow_left'], linear_thrust['stop'], fire_command['yes'])))
+    rules.append(ctrl.Rule(target_angle_error['little_left'] & current_speed['slow_reverse'], (angular_thrust['slow_left'], linear_thrust['slow_forward'],  fire_command['yes'])))
+    rules.append(ctrl.Rule(target_angle_error['little_left'] & current_speed['fast_reverse'], (angular_thrust['slow_left'], linear_thrust['fast_forward'], fire_command['yes'])))
+    rules.append(ctrl.Rule(target_angle_error['center'], (angular_thrust['stop'], fire_command['yes'])))
+    rules.append(ctrl.Rule(target_angle_error['little_right'] & current_speed['fast_forward'], (angular_thrust['slow_right'], linear_thrust['fast_reverse'], fire_command['yes'])))
+    rules.append(ctrl.Rule(target_angle_error['little_right'] & current_speed['slow_forward'], (angular_thrust['slow_right'], linear_thrust['slow_reverse'], fire_command['yes'])))
+    rules.append(ctrl.Rule(target_angle_error['little_right'] & current_speed['stop'], (angular_thrust['slow_right'], linear_thrust['stop'],  fire_command['yes'], fire_command['yes'])))
+    rules.append(ctrl.Rule(target_angle_error['little_right'] & current_speed['slow_reverse'], (angular_thrust['slow_right'], linear_thrust['slow_forward'], fire_command['yes'])))
+    rules.append(ctrl.Rule(target_angle_error['little_right'] & current_speed['fast_reverse'], (angular_thrust['slow_right'], linear_thrust['fast_forward'], fire_command['yes'])))
+    rules.append(ctrl.Rule(target_angle_error['very_right'] & current_speed['fast_forward'], (angular_thrust['fast_right'], linear_thrust['fast_reverse'], fire_command['no'])))
+    rules.append(ctrl.Rule(target_angle_error['very_right'] & current_speed['slow_forward'], (angular_thrust['fast_right'], linear_thrust['slow_reverse'], fire_command['no'])))
+    rules.append(ctrl.Rule(target_angle_error['very_right'] & current_speed['stop'], (angular_thrust['fast_right'], linear_thrust['stop'], fire_command['no'])))
+    rules.append(ctrl.Rule(target_angle_error['very_right'] & current_speed['slow_reverse'], (angular_thrust['fast_right'], linear_thrust['slow_forward'], fire_command['no'])))
+    rules.append(ctrl.Rule(target_angle_error['very_right'] & current_speed['fast_reverse'], (angular_thrust['fast_right'], linear_thrust['fast_forward'], fire_command['no'])))
 
-    rules.append(ctrl.Rule(target_asteroid_distance['very_far'] & current_speed['fast_forward'], linear_thrust['slow_reverse']))
-    rules.append(ctrl.Rule(target_asteroid_distance['very_far'] & current_speed['slow_forward'], linear_thrust['stop']))
-    rules.append(ctrl.Rule(target_asteroid_distance['very_far'] & current_speed['stop'], linear_thrust['slow_forward']))
-    rules.append(ctrl.Rule(target_asteroid_distance['very_far'] & (current_speed['slow_reverse'] | current_speed['fast_reverse']), linear_thrust['fast_forward']))
-    rules.append(ctrl.Rule(target_asteroid_distance['far'] & current_speed['fast_forward'], linear_thrust['fast_reverse']))
-    rules.append(ctrl.Rule(target_asteroid_distance['far'] & current_speed['slow_forward'], linear_thrust['stop']))
-    rules.append(ctrl.Rule(target_asteroid_distance['far'] & current_speed['stop'], linear_thrust['slow_forward']))
-    rules.append(ctrl.Rule(target_asteroid_distance['far'] & (current_speed['slow_reverse'] | current_speed['fast_reverse']), linear_thrust['fast_forward']))
-    rules.append(ctrl.Rule(target_asteroid_distance['in_range'] & current_speed['fast_forward'], linear_thrust['fast_reverse']))
-    rules.append(ctrl.Rule(target_asteroid_distance['in_range'] & current_speed['slow_forward'], linear_thrust['slow_reverse']))
-    rules.append(ctrl.Rule(target_asteroid_distance['in_range'] & current_speed['stop'], linear_thrust['stop']))
-    rules.append(ctrl.Rule(target_asteroid_distance['in_range'] & current_speed['slow_reverse'], linear_thrust['slow_forward']))
-    rules.append(ctrl.Rule(target_asteroid_distance['in_range'] & current_speed['fast_reverse'], linear_thrust['fast_forward']))
-    rules.append(ctrl.Rule(target_asteroid_distance['close'] & (current_speed['slow_forward'] | current_speed['fast_forward']), linear_thrust['fast_reverse']))
-    rules.append(ctrl.Rule(target_asteroid_distance['close'] & current_speed['stop'], linear_thrust['slow_reverse']))
-    rules.append(ctrl.Rule(target_asteroid_distance['close'] & current_speed['slow_reverse'], linear_thrust['stop']))
-    rules.append(ctrl.Rule(target_asteroid_distance['close'] & current_speed['fast_reverse'], linear_thrust['slow_forward']))
-    rules.append(ctrl.Rule(target_asteroid_distance['very_close'] & (current_speed['stop'] | current_speed['slow_forward'] | current_speed['fast_forward']), linear_thrust['fast_reverse']))
-    rules.append(ctrl.Rule(target_asteroid_distance['very_close'] & current_speed['slow_reverse'], linear_thrust['slow_reverse']))
-    rules.append(ctrl.Rule(target_asteroid_distance['very_close'] & current_speed['fast_reverse'], linear_thrust['stop']))
-    rules.append(ctrl.Rule(target_angle_error['very_left'] & current_speed['fast_forward'], (angular_thrust['fast_left'], linear_thrust['fast_reverse'])))
-    rules.append(ctrl.Rule(target_angle_error['very_left'] & current_speed['slow_forward'], (angular_thrust['fast_left'], linear_thrust['slow_reverse'])))
-    rules.append(ctrl.Rule(target_angle_error['very_left'] & current_speed['stop'], (angular_thrust['fast_left'], linear_thrust['stop'])))
-    rules.append(ctrl.Rule(target_angle_error['very_left'] & current_speed['slow_reverse'], (angular_thrust['fast_left'], linear_thrust['slow_forward'])))
-    rules.append(ctrl.Rule(target_angle_error['very_left'] & current_speed['fast_reverse'], (angular_thrust['fast_left'], linear_thrust['fast_forward'])))
-    rules.append(ctrl.Rule(target_angle_error['little_left'] & current_speed['fast_forward'], (angular_thrust['slow_left'], linear_thrust['fast_reverse'])))
-    rules.append(ctrl.Rule(target_angle_error['little_left'] & current_speed['slow_forward'], (angular_thrust['slow_left'], linear_thrust['slow_reverse'])))
-    rules.append(ctrl.Rule(target_angle_error['little_left'] & current_speed['stop'], (angular_thrust['slow_left'], linear_thrust['stop'])))
-    rules.append(ctrl.Rule(target_angle_error['little_left'] & current_speed['slow_reverse'], (angular_thrust['slow_left'], linear_thrust['slow_forward'])))
-    rules.append(ctrl.Rule(target_angle_error['little_left'] & current_speed['fast_reverse'], (angular_thrust['slow_left'], linear_thrust['fast_forward'])))
-    rules.append(ctrl.Rule(target_angle_error['center'], angular_thrust['stop']))
-    rules.append(ctrl.Rule(target_angle_error['little_right'] & current_speed['fast_forward'], (angular_thrust['slow_right'], linear_thrust['fast_reverse'])))
-    rules.append(ctrl.Rule(target_angle_error['little_right'] & current_speed['slow_forward'], (angular_thrust['slow_right'], linear_thrust['slow_reverse'])))
-    rules.append(ctrl.Rule(target_angle_error['little_right'] & current_speed['stop'], (angular_thrust['slow_right'], linear_thrust['stop'])))
-    rules.append(ctrl.Rule(target_angle_error['little_right'] & current_speed['slow_reverse'], (angular_thrust['slow_right'], linear_thrust['slow_forward'])))
-    rules.append(ctrl.Rule(target_angle_error['little_right'] & current_speed['fast_reverse'], (angular_thrust['slow_right'], linear_thrust['fast_forward'])))
-    rules.append(ctrl.Rule(target_angle_error['very_right'] & current_speed['fast_forward'], (angular_thrust['fast_right'], linear_thrust['fast_reverse'])))
-    rules.append(ctrl.Rule(target_angle_error['very_right'] & current_speed['slow_forward'], (angular_thrust['fast_right'], linear_thrust['slow_reverse'])))
-    rules.append(ctrl.Rule(target_angle_error['very_right'] & current_speed['stop'], (angular_thrust['fast_right'], linear_thrust['stop'])))
-    rules.append(ctrl.Rule(target_angle_error['very_right'] & current_speed['slow_reverse'], (angular_thrust['fast_right'], linear_thrust['slow_forward'])))
-    rules.append(ctrl.Rule(target_angle_error['very_right'] & current_speed['fast_reverse'], (angular_thrust['fast_right'], linear_thrust['fast_forward'])))
-
+    # accuracy rules
+    # rules.append(ctrl.Rule(target_asteroid_distance['in_range'] & target_angle_error['little_left'],
+    #                    (linear_thrust['stop'], fire_command['yes'])))
+    # rules.append(ctrl.Rule(target_asteroid_distance['in_range'] & target_angle_error['center'],
+    #                     (linear_thrust['stop'], fire_command['yes'])))
+    # rules.append(ctrl.Rule(target_asteroid_distance['in_range'] & target_angle_error['little_right'],
+    #                     (linear_thrust['stop'], fire_command['yes'])))
     fuzzy_ctrl = ctrl.ControlSystem(rules)
     fuzzy_sim = ctrl.ControlSystemSimulation(fuzzy_ctrl)
 
@@ -113,14 +119,13 @@ class SimpleFuzzy(KesslerController):
         """
         sim = create_fuzzy_system()
         self.sim = sim
-
+        self.eval_frames = 0
         self.target_distance = 200
         self.angle_max = 180
         self.max_speed = 450
 
         self.linear_scaling = 500
         self.angular_scaling = 500
-        self.eval_frames = 0  # required field in scenario test
 
 
     def actions(self, ship_state: Dict, game_state: Dict) -> Tuple[float, float, bool, bool]:
@@ -142,7 +147,6 @@ class SimpleFuzzy(KesslerController):
         self.update_derived_features()
 
         command = self.get_command()
-
         self.eval_frames +=1
 
         return command
@@ -168,8 +172,13 @@ class SimpleFuzzy(KesslerController):
 
         angular_thrust = sim.output['angular_thrust'] * angular_scaling
         angular_thrust = self.clip_angular_thrust(angular_thrust)
-
         fire_command = True
+        if sim.output['fire_command'] >= 0:
+            fire_command = True
+        else:
+            fire_command = False
+
+        #fire_command = True
 
         command = (linear_thrust, angular_thrust, fire_command)
 
@@ -298,3 +307,14 @@ def normalize(num, mx, symmetric=False):
     
     normal = np.clip(num, mn, mx) / mx
     return normal
+
+def genetic_controller(chromosome):
+    controller = SimpleFuzzy()
+    controller.linear_scaling = remap(chromosome[0].value, 480 - 100, 480 + 100)
+    controller.target_distance = remap(chromosome[1].value, 100, 500)
+
+    return controller
+
+def remap(num, mn, mx):
+    diff = mx - mn
+    return num * diff + mn
