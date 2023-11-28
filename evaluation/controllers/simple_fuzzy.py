@@ -57,24 +57,6 @@ def create_fuzzy_system() -> ctrl.ControlSystemSimulation:
     
     # Rules
     rules = []
-
-    # rules.append(ctrl.Rule(target_asteroid_distance['very_far'], (linear_thrust['fast_forward'], fire_command['no'])))
-    # rules.append(ctrl.Rule(target_asteroid_distance['far'], (linear_thrust['slow_forward'], fire_command['no'])))
-    # rules.append(ctrl.Rule(target_asteroid_distance['in_range'], (linear_thrust['stop'], fire_command['yes'])))
-    # rules.append(ctrl.Rule(target_asteroid_distance['close'], (linear_thrust['slow_reverse'], fire_command['yes'])))
-    # rules.append(ctrl.Rule(target_asteroid_distance['very_close'], (linear_thrust['fast_reverse'], fire_command['no'])))
-    # rules.append(ctrl.Rule(target_angle_error['very_left'], (angular_thrust['fast_left'], fire_command['no'])))
-    # rules.append(ctrl.Rule(target_angle_error['little_left'], (angular_thrust['slow_left'], fire_command['yes'])))
-    # rules.append(ctrl.Rule(target_angle_error['center'], (angular_thrust['stop'], fire_command['yes'])))
-    # rules.append(ctrl.Rule(target_angle_error['little_right'], (angular_thrust['slow_right'], fire_command['yes'])))
-    # rules.append(ctrl.Rule(target_angle_error['very_right'], (angular_thrust['fast_right'], fire_command['no'])))
-    # # accuracy rules
-    # rules.append(ctrl.Rule(target_asteroid_distance['in_range'] & target_angle_error['little_left'],
-    #                    (linear_thrust['stop'], fire_command['yes'])))
-    # rules.append(ctrl.Rule(target_asteroid_distance['in_range'] & target_angle_error['center'],
-    #                     (linear_thrust['stop'], fire_command['yes'])))
-    # rules.append(ctrl.Rule(target_asteroid_distance['in_range'] & target_angle_error['little_right'],
-    #                     (linear_thrust['stop'], fire_command['yes'])))
     
     rules.append(ctrl.Rule(target_asteroid_distance['very_far'] & current_speed['fast_forward'], (linear_thrust['slow_reverse'], fire_command['no'])))
     rules.append(ctrl.Rule(target_asteroid_distance['very_far'] & current_speed['slow_forward'], linear_thrust['stop'], fire_command['no']))
