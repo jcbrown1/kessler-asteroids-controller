@@ -106,7 +106,7 @@ def create_fuzzy_system() -> ctrl.ControlSystemSimulation:
     return fuzzy_sim
 
 
-class SimpleFuzzy(KesslerController):
+class OldSimpleFuzzy(KesslerController):
     def __init__(self,):
         """
         Any variables or initialization desired for the controller can be set up here
@@ -178,41 +178,20 @@ class SimpleFuzzy(KesslerController):
     def get_closest_asteroid(self, ship_state: Dict, game_state: Dict) -> Asteroid.state:
         closest_distance = 1000000
         closest_state = None
-        biggest_asteroid = 1
-        fastest_velocity = 1
 
         my_position = self.ship_state['position']
         my_position = np.array(my_position)
-        print("reset get closest")
+
         for asteroid_state in self.game_state['asteroids']:
             their_position = np.array(asteroid_state['position'])
             vector_diff = np.array(my_position - their_position)
             distance_diff = np.linalg.norm(vector_diff) - asteroid_state['size']
-            asteroid_size = asteroid_state['size']
-            # asteroid_angle = asteroid_state['angle']
-            asteroid_velocity = asteroid_state['velocity']
             
             if closest_distance > distance_diff:
                 closest_distance = distance_diff
                 closest_state = asteroid_state
-                fastest_velocity  = asteroid_velocity
-            if closest_distance == distance_diff:
-                if asteroid_size > biggest_asteroid:
-                    print("same dist " + str(asteroid_size))
-                    closest_distance = distance_diff
-                    closest_state = asteroid_state
-                    biggest_asteroid = asteroid_size
-                    fastest_velocity  = asteroid_velocity
 
-                if asteroid_size == biggest_asteroid and asteroid_velocity > fastest_velocity:
-                    print("same size " + str(asteroid_velocity))
-                    fastest_velocity = asteroid_velocity
-                
         return closest_state
-    
-    def angle_difference_from_ship(self, angle2):
-        angle1 = self.ship_state['heading']
-        return min((angle1 - angle2) % 360, (angle2 - angle1) % 360)
 
     def get_asteroid_distance_angles(self, ship_state: Dict, game_state: Dict) -> list[tuple]:
         '''
@@ -242,6 +221,7 @@ class SimpleFuzzy(KesslerController):
             pairs.append((d_norm, d_angle))
 
         return pairs
+            
 
     def update_derived_features(self) -> None:
  
