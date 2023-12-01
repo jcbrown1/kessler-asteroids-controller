@@ -7,7 +7,7 @@ from controllers.old_simple_fuzzy import OldSimpleFuzzy
 from graphics_both import GraphicsBoth
 
 my_test_scenario = Scenario(name='Test Scenario',
- num_asteroids=5,
+ num_asteroids=10,
 ship_states=[
  {'position': (400, 400), 'angle': 90, 'lives': 3, 'team': 1},
  {'position': (600, 400), 'angle': 90, 'lives': 3, 'team': 2},
@@ -51,7 +51,7 @@ def test_average_scores(num_games=5):
         print(f"{metric}: {team_averages['Team1'][idx]} vs {team_averages['Team2'][idx]}")
     return team_averages
 
-print(test_average_scores(5))
+print(test_average_scores(10))
 
 
 
