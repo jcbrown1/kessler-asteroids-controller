@@ -106,20 +106,22 @@ def create_fuzzy_system() -> ctrl.ControlSystemSimulation:
     return fuzzy_sim
 
 
-class SimpleFuzzy(KesslerController):
-    def __init__(self,):
+class HughMungus(KesslerController):
+    def __init__(self):
         """
         Any variables or initialization desired for the controller can be set up here
         """
+        values = [0.80857, 0.76046, 0.922634, 0.755019]
+
         sim = create_fuzzy_system()
         self.sim = sim
 
-        self.target_distance = 200
+        self.target_distance = remap(get(values, 1), 150, 250)
         self.angle_max = 180
-        self.max_speed = 450
+        self.max_speed = remap(get(values, 1), 350, 500)
 
-        self.linear_scaling = 500
-        self.angular_scaling = 500
+        self.linear_scaling = remap(get(values, 1), 400, 550)
+        self.angular_scaling = remap(get(values, 1), 450, 550)
         self.eval_frames = 0  # required field in scenario test
 
 
@@ -288,7 +290,7 @@ class SimpleFuzzy(KesslerController):
         Returns:
             str: name of this controller
         """
-        return "Simple Fuzzy"
+        return "Hugh Mungus"
 
 
 def normalize(num, mx, symmetric=False):
@@ -299,3 +301,17 @@ def normalize(num, mx, symmetric=False):
     
     normal = np.clip(num, mn, mx) / mx
     return normal
+
+def remap(num, mn, mx):
+    diff = mx - mn
+    return num * diff + mn
+
+def get(values: list[float], num: int) -> list[float]:
+    sublist = []
+    for _ in range(num):
+        sublist.append(values.pop())
+    sublist.sort()
+    
+    if num == 1:
+        return sublist[0]
+    return sublist

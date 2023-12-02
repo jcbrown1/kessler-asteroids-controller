@@ -1,32 +1,38 @@
-import kesslergame
+from kesslergame import GraphicsType
 import time
 from kesslergame.kessler_game import TrainerEnvironment, KesslerGame
 from kesslergame.scenario import Scenario
 from kesslergame.controller import KesslerController
 from controllers.genetic_fuzzy import genetic_controller
+from controllers.winner_winner_chicken_dinner import HughMungus
 import numpy as np
 
 # game = TrainerEnvironment()  # Use this instead if you want NO GUI
-game = KesslerGame()
+game_settings = {'perf_tracker': True,
+ 'graphics_type': GraphicsType.Tkinter,
+ 'realtime_multiplier': 1,
+ 'graphics_obj': None}
+
+game = KesslerGame(game_settings)
 scenario = Scenario(
     name='test', 
-    # num_asteroids=10,
-    asteroid_states=[
-                    {'position' : (100, 100),'angle': 45, 'speed' : np.random.randint(10, 50), 'size' : np.random.randint(3, 4)},
-                    {'position' : (900, 100), 'angle' : 135, 'speed' : np.random.randint(10, 50)},
-                    {'position' : (900, 700), 'angle' : 225, 'speed' : np.random.randint(10, 50), 'size' : np.random.randint(3, 4)},
-                    {'position' : (100, 700), 'angle' : 315, 'speed' : np.random.randint(10, 50)},
-                    {'position' : (500, 100), 'angle' : 90, 'speed' : np.random.randint(10, 50)},
-                    {'position' : (100, 400), 'angle' : 0, 'speed' : np.random.randint(10, 50)},
-                    {'position' : (900, 400), 'angle' : 180, 'speed' : np.random.randint(10, 50)},
-                    {'position' : (500, 700), 'angle' : 270, 'speed' : np.random.randint(10, 50)}
-                ],
+    num_asteroids=10,
+    # asteroid_states=[
+    #                 {'position' : (100, 100),'angle': 45, 'speed' : np.random.randint(10, 50), 'size' : np.random.randint(3, 4)},
+    #                 {'position' : (900, 100), 'angle' : 135, 'speed' : np.random.randint(10, 50)},
+    #                 {'position' : (900, 700), 'angle' : 225, 'speed' : np.random.randint(10, 50), 'size' : np.random.randint(3, 4)},
+    #                 {'position' : (100, 700), 'angle' : 315, 'speed' : np.random.randint(10, 50)},
+    #                 {'position' : (500, 100), 'angle' : 90, 'speed' : np.random.randint(10, 50)},
+    #                 {'position' : (100, 400), 'angle' : 0, 'speed' : np.random.randint(10, 50)},
+    #                 {'position' : (900, 400), 'angle' : 180, 'speed' : np.random.randint(10, 50)},
+    #                 {'position' : (500, 700), 'angle' : 270, 'speed' : np.random.randint(10, 50)}
+    #             ],
     )
 
 def evaluate_controller(controller: KesslerController) -> float:
     results = []
     # times = []
-    num = 5
+    num = 10
     
     start = time.time()
 
@@ -60,8 +66,7 @@ def evaluate_chromosome(chromosome):
     return score
 
 def main():
-    from controllers.simple_fuzzy import SimpleFuzzy
-    score = evaluate_controller(SimpleFuzzy())
+    score = evaluate_controller(HughMungus())
     print(score)
 
 if __name__ == '__main__':
