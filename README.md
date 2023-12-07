@@ -12,6 +12,9 @@ pip install -r requirements.txt
 ```
 # File Explanation:
 `evaluation/genetic_training.py` -> This is the main file to run to train a genetic fuzzy system
+
 `evaluation/controller_scorer.py` -> This is a module containing the fitness function for genetic training. It does not need to be run in isolation
+
 `evaluation/controllers/genetic_fuzzy.py` -> This is the genetic fuzzy controller that implements genetically trained parameters. To use it as a normal controller, use the `genetic_controller()` function with NO ARGUMENT in kessler game.
+
 `evaluation/controllers/simple_fuzzy.py` -> This is a basic fuzzy ccontroller. It is used as the base class of the genetic fuzzy controller and isn't meant to be run in isolation, but it can be if desired.
